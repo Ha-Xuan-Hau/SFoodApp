@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+
+# Local configuration
+local.properties
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.hprof
+
+# Log files
+*.log
+
+# Generated files
+*.apk
+*.ap_ 
+*.aab
+*.jar
+*.keystore
+captures/
+
+# Kotlin/Java
+*.class
+*.dex
+
+# ProGuard
+proguard/
+
+# Android
+android/
+
+# Node modules (if using React Native or other JS frameworks)
+node_modules/
+
+# Flutter (if applicable)
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.packages
