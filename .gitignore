@@ -1,3 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
 # Gradle
 .gradle/
 build/
@@ -15,7 +29,7 @@ local.properties
 
 # Generated files
 *.apk
-*.ap_ 
+*.ap_
 *.aab
 *.jar
 *.keystore
