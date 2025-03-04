@@ -34,8 +34,6 @@ android {
 dependencies {
     implementation ("androidx.room:room-runtime:2.6.1")
     annotationProcessor ("androidx.room:room-compiler:2.6.1")
-    implementation ("org.projectlombok:lombok:1.18.28")
-    annotationProcessor ("org.projectlombok:lombok:1.18.28")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

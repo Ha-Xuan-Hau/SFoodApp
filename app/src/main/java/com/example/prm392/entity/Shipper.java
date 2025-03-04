@@ -2,14 +2,10 @@ package com.example.prm392.entity;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+
 
 @Entity(tableName = "Shipper")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class Shipper {
     @PrimaryKey(autoGenerate = true)
     private int shipperId;
@@ -18,6 +14,66 @@ public class Shipper {
     private String cccd;
     private String email;
     private String status;
+
+    public Shipper() {
+    }
+
+    public Shipper(int shipperId, String fullName, String phone, String cccd, String email, String status) {
+        this.shipperId = shipperId;
+        this.fullName = fullName;
+        this.phone = phone;
+        this.cccd = cccd;
+        this.email = email;
+        this.status = status;
+    }
+
+    public int getShipperId() {
+        return shipperId;
+    }
+
+    public void setShipperId(int shipperId) {
+        this.shipperId = shipperId;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getCccd() {
+        return cccd;
+    }
+
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
 
 
