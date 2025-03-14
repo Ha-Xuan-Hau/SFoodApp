@@ -1,5 +1,6 @@
 package com.example.prm392.Dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -18,8 +19,8 @@ public interface MenuItemsDao {
     @Query("SELECT * FROM Menu_Items WHERE restaurantId = :restaurantId")
     List<MenuItems> getMenuByRestaurant(int restaurantId);
 
-    @Query("SELECT * FROM Menu_items")
-    List<MenuItems> getAllMenuItems();
+    @Query("SELECT * FROM menu_items")
+    LiveData<List<MenuItems>> getAllMenuItems();
 
     @Update
     void update(MenuItems menuItems);

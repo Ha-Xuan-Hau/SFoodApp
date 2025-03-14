@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">PRM392</string>
     <string name="title_activity_menu_items">MenuItemsActivity</string>
+    <string-array name="status_array">
+        <item>available</item>
+        <item>unavailable</item>
+    </string-array>
 </resources>

@@ -3,6 +3,8 @@ package com.example.prm392.repository;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import androidx.lifecycle.LiveData;
+
 import com.example.prm392.Dao.MenuItemsDao;
 import com.example.prm392.database.AppDatabase;
 import com.example.prm392.entity.MenuItems;
@@ -13,7 +15,7 @@ import java.util.concurrent.Executors;
 
 public class MenuItemsRepository {
     private MenuItemsDao menuItemsDao;
-    private List<MenuItems> allMenuItems;
+    private LiveData<List<MenuItems>> allMenuItems;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public MenuItemsRepository(Context context) {
@@ -22,38 +24,19 @@ public class MenuItemsRepository {
         allMenuItems = menuItemsDao.getAllMenuItems();
     }
 
+    public LiveData<List<MenuItems>> getAllMenuItems() {
+        return allMenuItems;
+    }
+
     public void insert(MenuItems menuItem) {
         executorService.execute(() -> menuItemsDao.insert(menuItem));
     }
 
-    public List<MenuItems> getMenuByRestaurant(int restaurantId) {
-        return menuItemsDao.getMenuByRestaurant(restaurantId);
+    public void update(MenuItems menuItem) {
+        executorService.execute(() -> menuItemsDao.update(menuItem));
     }
 
-    public List<MenuItems> getAllMenuItems() {
-        return allMenuItems;
-    }
-
-    public void update(MenuItems menuItems) {
-        executorService.execute(() -> menuItemsDao.update(menuItems));
-    }
-
-    public void delete(MenuItems menuItems) {
-        executorService.execute(() -> menuItemsDao.delete(menuItems));
-    }
-
-    private static class InsertMenuItemsAsyncTask extends AsyncTask<MenuItems, Void, Void> {
-        private MenuItemsDao menuItemsDao;
-
-        private InsertMenuItemsAsyncTask(MenuItemsDao menuItemsDao) {
-            this.menuItemsDao = menuItemsDao;
-        }
-
-        @Override
-        protected Void doInBackground(MenuItems... menuItems) {
-            menuItemsDao.insert(menuItems[0]);
-            return null;
-        }
+    public void delete(MenuItems menuItem) {
+        executorService.execute(() -> menuItemsDao.delete(menuItem));
     }
 }
-

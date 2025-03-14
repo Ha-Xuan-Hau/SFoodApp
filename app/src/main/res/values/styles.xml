@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="EditTextStyle">
+        <item name="android:background">@drawable/edittext_background</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="SpinnerStyle">
+        <item name="android:background">@android:drawable/btn_dropdown</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

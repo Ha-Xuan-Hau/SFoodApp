@@ -1,22 +1,20 @@
 package com.example.prm392.viewmodel;
 
-import android.app.Application;
+import android.content.Context;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.example.prm392.entity.MenuItems;
 import com.example.prm392.repository.MenuItemsRepository;
 
 import java.util.List;
 
-public class MenuItemsViewModel extends AndroidViewModel {
+public class MenuItemsViewModel extends ViewModel {
     private MenuItemsRepository repository;
-    private List<MenuItems> allMenuItems;
-
-    public MenuItemsViewModel(Application application) {
-        super(application);
-        repository = new MenuItemsRepository(application);
+    private final LiveData<List<MenuItems>> allMenuItems;
+    public MenuItemsViewModel(Context context) {
+        repository = new MenuItemsRepository(context);
         allMenuItems = repository.getAllMenuItems();
     }
 
@@ -24,7 +22,7 @@ public class MenuItemsViewModel extends AndroidViewModel {
         repository.insert(menuItems);
     }
 
-    public List<MenuItems> getAllMenuItems() {
+    public LiveData<List<MenuItems>> getAllMenuItems() {
         return allMenuItems;
     }
 
