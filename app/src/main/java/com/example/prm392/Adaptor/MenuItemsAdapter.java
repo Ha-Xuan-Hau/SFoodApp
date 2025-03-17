@@ -1,6 +1,7 @@
 package com.example.prm392.Adaptor;
 
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.prm392.R;
 import com.example.prm392.entity.MenuItems;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.MenuItemViewHolder> {
@@ -25,6 +27,34 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
         this.menuItemsList = menuItemsList;
         this.listener = listener;
     }
+    public void filter(String query, String priceFilter) {
+        List<MenuItems> filteredList = new ArrayList<>();
+
+        for (MenuItems item : filteredList) {
+            boolean matchesQuery = item.getName().toLowerCase().contains(query.toLowerCase());
+            boolean matchesPrice = true;
+
+            if (!priceFilter.equals("Tất cả")) {
+                double price = item.getPrice();
+                if (priceFilter.equals("Dưới 50K") && price >= 50000) {
+                    matchesPrice = false;
+                } else if (priceFilter.equals("50K - 100K") && (price < 50000 || price > 100000)) {
+                    matchesPrice = false;
+                } else if (priceFilter.equals("Trên 100K") && price <= 100000) {
+                    matchesPrice = false;
+                }
+            }
+
+            if (matchesQuery && matchesPrice) {
+                filteredList.add(item);
+            }
+        }
+
+        menuItemsList.clear();
+        menuItemsList.addAll(filteredList);
+        notifyDataSetChanged();
+    }
+
 
     @NonNull
     @Override
