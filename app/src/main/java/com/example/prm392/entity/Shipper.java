@@ -13,18 +13,29 @@ public class Shipper {
     private String phone;
     private String cccd;
     private String email;
+    private String password;
     private String status;
 
     public Shipper() {
     }
 
-    public Shipper(int shipperId, String fullName, String phone, String cccd, String email, String status) {
+
+    public Shipper(int shipperId, String fullName, String phone, String cccd, String email, String password, String status) {
         this.shipperId = shipperId;
         this.fullName = fullName;
         this.phone = phone;
         this.cccd = cccd;
         this.email = email;
+        this.password = password;
         this.status = status;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public int getShipperId() {
