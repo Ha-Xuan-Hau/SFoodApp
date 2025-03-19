@@ -2,43 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/white"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/white">
+    android:padding="16dp">
 
     <EditText
         android:id="@+id/edtName"
+        style="@style/EditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tên món ăn"
-        style="@style/EditTextStyle"/>
+        android:hint="Tên món ăn" />
 
     <EditText
         android:id="@+id/edtDescription"
+        style="@style/EditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Mô tả"
-        style="@style/EditTextStyle"/>
+        android:padding="12dp" />
 
     <EditText
         android:id="@+id/edtPrice"
+        style="@style/EditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Giá"
-        android:inputType="numberDecimal"
-        style="@style/EditTextStyle"/>
+        android:inputType="numberDecimal" />
 
     <EditText
         android:id="@+id/edtImageUrl"
+        style="@style/EditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="URL Hình ảnh"
-        style="@style/EditTextStyle"/>
+        android:hint="URL Hình ảnh" />
 
     <Spinner
-        android:id="@+id/spnStatus"
+        android:id="@+id/select_restaurant"
+        style="@style/SpinnerStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/SpinnerStyle"/>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

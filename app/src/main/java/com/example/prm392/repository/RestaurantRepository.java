@@ -2,6 +2,8 @@ package com.example.prm392.repository;
 
 import android.content.Context;
 
+import androidx.lifecycle.LiveData;
+
 import com.example.prm392.Dao.RestaurantDao;
 import com.example.prm392.database.AppDatabase;
 import com.example.prm392.entity.Restaurant;
@@ -23,8 +25,8 @@ public class RestaurantRepository {
         executorService.execute(() -> restaurantDao.insert(restaurant));
     }
 
-    public List<Restaurant> getAllRestaurants() {
-        return restaurantDao.getAllRestaurants();
+    public LiveData<List<Restaurant>> getAllRestaurantsName() {
+        return restaurantDao.getAllRestaurantName();
     }
 }
 

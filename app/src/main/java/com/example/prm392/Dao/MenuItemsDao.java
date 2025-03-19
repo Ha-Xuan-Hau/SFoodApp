@@ -7,6 +7,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.example.prm392.DTO.MenuItemDTO;
 import com.example.prm392.entity.MenuItems;
 
 import java.util.List;
@@ -22,10 +23,17 @@ public interface MenuItemsDao {
     @Query("SELECT * FROM menu_items")
     LiveData<List<MenuItems>> getAllMenuItems();
 
+    @Query("SELECT m.id , m.name AS menu_name, m.price, m.description, r.email AS restaurant_email " +
+            "FROM Menu_Items m JOIN Restaurants r ON m.restaurantId = r.id")
+    LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant();
+
     @Update
     void update(MenuItems menuItems);
 
     @Delete
     void delete(MenuItems menuItems);
+
+    @Query("DELETE FROM Menu_Items WHERE id = :id")
+    void deleteById(int id);
 }
 

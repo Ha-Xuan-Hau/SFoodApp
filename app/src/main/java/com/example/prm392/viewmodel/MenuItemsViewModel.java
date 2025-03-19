@@ -5,32 +5,41 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.prm392.DTO.MenuItemDTO;
 import com.example.prm392.entity.MenuItems;
+import com.example.prm392.entity.Restaurant;
 import com.example.prm392.repository.MenuItemsRepository;
+import com.example.prm392.repository.RestaurantRepository;
 
 import java.util.List;
 
 public class MenuItemsViewModel extends ViewModel {
     private MenuItemsRepository repository;
-    private final LiveData<List<MenuItems>> allMenuItems;
+    private RestaurantRepository restaurantRepository;
+    private LiveData<List<MenuItemDTO>> allMenuItemsWithRestaurant;
     public MenuItemsViewModel(Context context) {
         repository = new MenuItemsRepository(context);
-        allMenuItems = repository.getAllMenuItems();
+        restaurantRepository = new RestaurantRepository(context);
+        allMenuItemsWithRestaurant = repository.getAllMenuItemsWithRestaurant();
     }
 
     public void insert(MenuItems menuItems) {
         repository.insert(menuItems);
     }
 
-    public LiveData<List<MenuItems>> getAllMenuItems() {
-        return allMenuItems;
+    public LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant() {
+        return allMenuItemsWithRestaurant;
     }
 
     public void update(MenuItems menuItems) {
         repository.update(menuItems);
     }
 
-    public void delete(MenuItems menuItems) {
-        repository.delete(menuItems);
+    public void deleteMenuItem(MenuItemDTO menuItemDTO) {
+        repository.deleteMenuItemById(menuItemDTO.getId());
+    }
+
+    public LiveData<List<Restaurant>> getAllRestaurants() {
+        return restaurantRepository.getAllRestaurantsName();
     }
 }

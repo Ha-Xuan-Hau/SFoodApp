@@ -1,5 +1,7 @@
 package com.example.prm392.Adaptor;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.prm392.DTO.MenuItemDTO;
+import com.example.prm392.MenuItemDetailActivity;
 import com.example.prm392.R;
 import com.example.prm392.entity.MenuItems;
 
@@ -16,14 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.MenuItemViewHolder> {
-    private List<MenuItems> menuItemsList;
+    private List<MenuItemDTO> menuItemsList;
     private OnItemClickListener listener;
-
+    private Context context;
     public interface OnItemClickListener {
-        void onDeleteClick(MenuItems menuItem);
+        void onDeleteClick(MenuItemDTO menuItem);
     }
 
-    public MenuItemsAdapter(List<MenuItems> menuItemsList, OnItemClickListener listener) {
+    public MenuItemsAdapter(List<MenuItemDTO> menuItemsList, OnItemClickListener listener) {
         this.menuItemsList = menuItemsList;
         this.listener = listener;
     }
@@ -50,9 +54,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
             }
         }
 
-        menuItemsList.clear();
-        menuItemsList.addAll(filteredList);
-        notifyDataSetChanged();
+
     }
 
 
@@ -65,11 +67,19 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
 
     @Override
     public void onBindViewHolder(@NonNull MenuItemViewHolder holder, int position) {
-        MenuItems menuItem = menuItemsList.get(position);
-        holder.name.setText(menuItem.getName());
+        MenuItemDTO menuItem = menuItemsList.get(position);
+        holder.name.setText(menuItem.getMenu_name());
         holder.price.setText(String.format("%.2f VND", menuItem.getPrice()));
+        holder.restaurant.setText("Nhà hàng: " + menuItem.getRestaurant_email());
 
-        // Xóa item khi bấm nút delete
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, MenuItemDetailActivity.class);
+            intent.putExtra("menu_name", menuItem.getMenu_name());
+            intent.putExtra("price", menuItem.getPrice());
+            intent.putExtra("description", menuItem.getDescription());
+            context.startActivity(intent);
+        });
+
         holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(menuItem));
     }
 
@@ -78,14 +88,21 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
         return menuItemsList.size();
     }
 
+    public void updateList(List<MenuItemDTO> newList) {
+        menuItemsList.clear();
+        menuItemsList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     static class MenuItemViewHolder extends RecyclerView.ViewHolder {
-        TextView name, price;
+        TextView name, price, restaurant;
         ImageView btnDelete;
 
         public MenuItemViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(com.example.prm392.R.id.item_name);
             price = itemView.findViewById(R.id.item_price);
+            restaurant = itemView.findViewById(R.id.txt_restaurant);
             btnDelete = itemView.findViewById(R.id.btn_delete);
         }
     }

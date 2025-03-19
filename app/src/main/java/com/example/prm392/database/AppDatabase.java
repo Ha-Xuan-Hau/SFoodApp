@@ -34,7 +34,7 @@ import com.example.prm392.entity.ShipperEvaluation;
         ShipperEvaluation.class,
         OrderDetail.class
 },
-        version = 1,
+        version = 2,
         exportSchema = false)
 @TypeConverters({DateConverter.class})
 public abstract class AppDatabase extends RoomDatabase {

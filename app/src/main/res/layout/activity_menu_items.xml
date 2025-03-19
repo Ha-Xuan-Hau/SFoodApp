@@ -7,7 +7,7 @@
     android:padding="10dp">
 
     <!-- Thanh tìm kiếm -->
-    <androidx.appcompat.widget.SearchView
+    <SearchView
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,7 +17,8 @@
     <Spinner
         android:id="@+id/spinner_filter_price"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
 
     <!-- RecyclerView hiển thị danh sách menu -->
     <androidx.recyclerview.widget.RecyclerView
