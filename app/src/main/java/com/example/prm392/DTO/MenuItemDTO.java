@@ -6,6 +6,7 @@ public class MenuItemDTO {
     public float price;
     public String description;
     public String restaurant_email;
+    public int restaurant_id;
     public MenuItemDTO(int id, String menu_name, float price, String description, String restaurant_email) {
         this.id = id;
         this.menu_name = menu_name;
@@ -15,6 +16,14 @@ public class MenuItemDTO {
     }
 
     // Getter và Setter
+    public void setRestaurant_id(int restaurant_id) {
+        this.restaurant_id = restaurant_id;
+    }
+
+    public int getRestaurant_id() {
+        return restaurant_id;
+    }
+
     public int getId() {
         return id;
     }

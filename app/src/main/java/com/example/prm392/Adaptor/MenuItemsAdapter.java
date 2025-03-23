@@ -73,11 +73,14 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
         holder.restaurant.setText("Nhà hàng: " + menuItem.getRestaurant_email());
 
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, MenuItemDetailActivity.class);
+            Context itemContext = v.getContext();
+            Intent intent = new Intent(itemContext, MenuItemDetailActivity.class);
+            intent.putExtra("id", menuItem.getId());
             intent.putExtra("menu_name", menuItem.getMenu_name());
             intent.putExtra("price", menuItem.getPrice());
             intent.putExtra("description", menuItem.getDescription());
-            context.startActivity(intent);
+            intent.putExtra("restaurant_id", menuItem.getRestaurant_id());
+            itemContext.startActivity(intent);
         });
 
         holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(menuItem));

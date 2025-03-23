@@ -23,7 +23,8 @@ public interface MenuItemsDao {
     @Query("SELECT * FROM menu_items")
     LiveData<List<MenuItems>> getAllMenuItems();
 
-    @Query("SELECT m.id , m.name AS menu_name, m.price, m.description, r.email AS restaurant_email " +
+    @Query("SELECT m.id, m.name AS menu_name, m.price, m.description, " +
+            "r.email AS restaurant_email, r.id AS restaurant_id " +
             "FROM Menu_Items m JOIN Restaurants r ON m.restaurantId = r.id")
     LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant();
 
