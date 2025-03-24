@@ -80,4 +80,13 @@ public class CustomerUserRepository {
         void onSuccess(CustomerUser user);
         void onFailure(String errorMessage);
     }
+
+    public void Register(String email,String phone, String address, String password){
+        CustomerUser customerUser = new CustomerUser(email, phone, address, password, "");
+        customerUserDao.register(customerUser);
+    }
+
+    public CustomerUser GetCustomerByEmail(String email){
+        return customerUserDao.getCustomerByEmail(email);
+    }
 }
