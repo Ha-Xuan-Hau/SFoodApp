@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="orange">#FFA500</color>
+    <color name="colorPrimary">#FF9800</color> <!-- Màu cam -->
+    <color name="colorPrimaryDark">#E65100</color> <!-- Màu cam đậm -->
+    <color name="colorAccent">#FFFFFFFF</color> <!-- Màu nhấn -->
+    <color name="orange_gradient">#FF6200</color>
 </resources>

@@ -1,46 +1,35 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
-import java.util.Date;
-
-
-@Entity(tableName = "Payments",
-        foreignKeys = {
-                @ForeignKey(entity = OrderShip.class, parentColumns = "orderShipId", childColumns = "orderId")
-        })
-
 public class Payments {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    private int orderId;
+    private String id; // Chuyển từ int sang String để phù hợp với Firebase
+    private String orderId; // Chuyển từ int sang String
     private double amount;
-    private Date paymentTime;
+    private long paymentTime; // Sử dụng timestamp thay vì Date
 
     public Payments() {
+        // Constructor rỗng bắt buộc để Firebase deserialize dữ liệu
     }
 
-    public Payments(int id, int orderId, double amount, Date paymentTime) {
+    public Payments(String id, String orderId, double amount, long paymentTime) {
         this.id = id;
         this.orderId = orderId;
         this.amount = amount;
         this.paymentTime = paymentTime;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 
@@ -52,12 +41,11 @@ public class Payments {
         this.amount = amount;
     }
 
-    public Date getPaymentTime() {
+    public long getPaymentTime() {
         return paymentTime;
     }
 
-    public void setPaymentTime(Date paymentTime) {
+    public void setPaymentTime(long paymentTime) {
         this.paymentTime = paymentTime;
     }
 }
-

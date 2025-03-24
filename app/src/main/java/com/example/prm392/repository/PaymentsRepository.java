@@ -1,29 +1,44 @@
 package com.example.prm392.repository;
 
-import android.content.Context;
-
-import com.example.prm392.Dao.PaymentsDao;
-import com.example.prm392.database.AppDatabase;
 import com.example.prm392.entity.Payments;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.*;
 
 public class PaymentsRepository {
-    private PaymentsDao paymentsDao;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final DatabaseReference firebaseDatabase;
 
-    public PaymentsRepository(Context context) {
-        AppDatabase db = AppDatabase.getInstance(context);
-        paymentsDao = db.paymentsDao();
+    public PaymentsRepository() {
+        firebaseDatabase = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Payments");
     }
 
-    public void insert(Payments payment) {
-        executorService.execute(() -> paymentsDao.insert(payment));
+    // Thêm thanh toán vào Firebase
+    public void insert(Payments payment, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DatabaseReference paymentRef = firebaseDatabase.push();
+        payment.setId(paymentRef.getKey()); // Chuyển hash về số dương
+        paymentRef.setValue(payment)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
     }
 
-    public Payments getPaymentByOrder(int orderId) {
-        return paymentsDao.getPaymentByOrder(orderId);
+    // Lấy thanh toán theo orderId
+    public void getPaymentByOrder(int orderId, ValueEventListener listener) {
+        firebaseDatabase.orderByChild("orderId").equalTo(orderId)
+                .addListenerForSingleValueEvent(listener);
+    }
+
+    // Cập nhật trạng thái thanh toán
+    public void updatePaymentStatus(int paymentId, String status, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        firebaseDatabase.child(String.valueOf(paymentId))
+                .child("status").setValue(status)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    // Xóa thanh toán
+    public void deletePayment(int paymentId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        firebaseDatabase.child(String.valueOf(paymentId)).removeValue()
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
     }
 }
-

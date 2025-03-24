@@ -1,13 +1,8 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
-
-@Entity(tableName = "CustomerUser")
 public class CustomerUser {
-    @PrimaryKey(autoGenerate = true)
-    private int customerId;
+    private String customerId; // Firebase dùng String làm khóa chính
+    private String fullName;
     private String email;
     private String phone;
     private String address;
@@ -15,10 +10,12 @@ public class CustomerUser {
     private String pref;
 
     public CustomerUser() {
+        // Bắt buộc để Firebase deserialize dữ liệu
     }
 
-    public CustomerUser(int customerId, String email, String phone, String address, String password, String pref) {
+    public CustomerUser(String customerId, String fullName, String email, String phone, String address, String password, String pref) {
         this.customerId = customerId;
+        this.fullName = fullName;
         this.email = email;
         this.phone = phone;
         this.address = address;
@@ -26,12 +23,20 @@ public class CustomerUser {
         this.pref = pref;
     }
 
-    public int getCustomerId() {
+    public String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getEmail() {
@@ -74,4 +79,3 @@ public class CustomerUser {
         this.pref = pref;
     }
 }
-

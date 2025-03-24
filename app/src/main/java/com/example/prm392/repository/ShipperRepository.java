@@ -1,30 +1,48 @@
 package com.example.prm392.repository;
 
-import android.content.Context;
-
-import com.example.prm392.Dao.ShipperDao;
-import com.example.prm392.database.AppDatabase;
 import com.example.prm392.entity.Shipper;
-
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.*;
 
 public class ShipperRepository {
-    private ShipperDao shipperDao;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final DatabaseReference shipperRef;
 
-    public ShipperRepository(Context context) {
-        AppDatabase db = AppDatabase.getInstance(context);
-        shipperDao = db.shipperDao();
+    public ShipperRepository() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app");
+        shipperRef = database.getReference("Shippers");
     }
 
-    public void insert(Shipper shipper) {
-        executorService.execute(() -> shipperDao.insert(shipper));
+    // 🔹 Thêm shipper vào Firebase
+    public void insertShipper(Shipper shipper, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        String shipperId = String.valueOf(shipper.getShipperId());
+        shipperRef.child(shipperId).setValue(shipper)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
     }
 
-    public List<Shipper> getActiveShippers() {
-        return shipperDao.getActiveShippers();
+    // 🔹 Lấy thông tin shipper theo ID
+    public void getShipperById(String shipperId, ValueEventListener listener) {
+        shipperRef.child(String.valueOf(shipperId)).addListenerForSingleValueEvent(listener);
+    }
+
+    // 🔹 Cập nhật thông tin shipper
+    public void updateShipper(Shipper shipper, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        shipperRef.child(String.valueOf(shipper.getShipperId()))
+                .setValue(shipper)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    // 🔹 Xóa shipper
+    public void deleteShipper(int shipperId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        shipperRef.child(String.valueOf(shipperId)).removeValue()
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    // 🔹 Lấy danh sách tất cả shipper
+    public void getAllShippers(ValueEventListener listener) {
+        shipperRef.addListenerForSingleValueEvent(listener);
     }
 }
-

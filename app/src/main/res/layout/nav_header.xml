@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@color/colorPrimaryDark">
+
+    <!-- Ảnh đại diện -->
+    <ImageView
+        android:id="@+id/nav_header_avatar"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/ic_avatar"
+        android:scaleType="centerCrop"
+        android:background="@drawable/circle_shape"
+        android:layout_gravity="center"
+        android:contentDescription="Avatar"/>
+
+    <!-- Tên người dùng -->
+    <TextView
+        android:id="@+id/nav_header_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Email -->
+    <TextView
+        android:id="@+id/nav_header_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="4dp"/>
+</LinearLayout>

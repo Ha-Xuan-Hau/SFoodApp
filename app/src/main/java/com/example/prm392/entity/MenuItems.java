@@ -1,18 +1,8 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
-
-
-@Entity(tableName = "Menu_Items",
-        foreignKeys = {
-                @ForeignKey(entity = Restaurant.class, parentColumns = "id", childColumns = "restaurantId")
-        })
 public class MenuItems {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    private int restaurantId;
+    private String id;
+    private String restaurantId;
     private String name;
     private String description;
     private double price;
@@ -22,7 +12,7 @@ public class MenuItems {
     public MenuItems() {
     }
 
-    public MenuItems(int id, int restaurantId, String name, String description, double price, String imageUrl, String status) {
+    public MenuItems(String id, String restaurantId, String name, String description, double price, String imageUrl, String status) {
         this.id = id;
         this.restaurantId = restaurantId;
         this.name = name;
@@ -32,19 +22,19 @@ public class MenuItems {
         this.status = status;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getRestaurantId() {
+    public String getRestaurantId() {
         return restaurantId;
     }
 
-    public void setRestaurantId(int restaurantId) {
+    public void setRestaurantId(String restaurantId) {
         this.restaurantId = restaurantId;
     }
 
@@ -88,4 +78,3 @@ public class MenuItems {
         this.status = status;
     }
 }
-

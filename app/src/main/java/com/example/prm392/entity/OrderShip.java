@@ -1,32 +1,26 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
-import java.util.Date;
+import androidx.annotation.Nullable;
 
-
-@Entity(tableName = "OrderShip",
-        foreignKeys = {
-                @ForeignKey(entity = CustomerUser.class, parentColumns = "customerId", childColumns = "customerId"),
-                @ForeignKey(entity = Shipper.class, parentColumns = "shipperId", childColumns = "shipperId")
-        })
 public class OrderShip {
-    @PrimaryKey(autoGenerate = true)
-    private int orderShipId;
-    private int customerId;
-    private int shipperId;
+    private String orderShipId; // Chuyển từ int sang String để phù hợp với Firebase
+    private String orderDetailId; // Chuyển từ int sang String
+    private String customerId;
+    @Nullable
+    private String shipperId; // Shipper có thể null nên để @Nullable
     private String orderStatus;
     private double totalPrice;
     private String deliveryType;
-    private Date createdAt;
-    private Date completedAt;
+    private long createdAt; // Lưu timestamp thay vì Date
+    private long completedAt;
 
     public OrderShip() {
+        // Constructor rỗng bắt buộc để Firebase deserialize dữ liệu
     }
 
-    public OrderShip(int orderShipId, int customerId, int shipperId, String orderStatus, double totalPrice, String deliveryType, Date createdAt, Date completedAt) {
+    public OrderShip(String orderShipId, String orderDetailId, String customerId, @Nullable String shipperId, String orderStatus, double totalPrice, String deliveryType, long createdAt, long completedAt) {
         this.orderShipId = orderShipId;
+        this.orderDetailId = orderDetailId;
         this.customerId = customerId;
         this.shipperId = shipperId;
         this.orderStatus = orderStatus;
@@ -36,27 +30,36 @@ public class OrderShip {
         this.completedAt = completedAt;
     }
 
-    public int getOrderShipId() {
+    public String getOrderShipId() {
         return orderShipId;
     }
 
-    public void setOrderShipId(int orderShipId) {
+    public void setOrderShipId(String orderShipId) {
         this.orderShipId = orderShipId;
     }
 
-    public int getCustomerId() {
+    public String getOrderDetailId() {
+        return orderDetailId;
+    }
+
+    public void setOrderDetailId(String orderDetailId) {
+        this.orderDetailId = orderDetailId;
+    }
+
+    public String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
 
-    public int getShipperId() {
+    @Nullable
+    public String getShipperId() {
         return shipperId;
     }
 
-    public void setShipperId(int shipperId) {
+    public void setShipperId(@Nullable String shipperId) {
         this.shipperId = shipperId;
     }
 
@@ -84,20 +87,19 @@ public class OrderShip {
         this.deliveryType = deliveryType;
     }
 
-    public Date getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getCompletedAt() {
+    public long getCompletedAt() {
         return completedAt;
     }
 
-    public void setCompletedAt(Date completedAt) {
+    public void setCompletedAt(long completedAt) {
         this.completedAt = completedAt;
     }
 }
-

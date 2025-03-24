@@ -1,26 +1,17 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
-import java.util.Date;
-
-@Entity(tableName = "ShipperEvaluation",
-        foreignKeys = {
-                @ForeignKey(entity = OrderShip.class, parentColumns = "orderShipId", childColumns = "orderId")
-        })
 public class ShipperEvaluation {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    private int orderId;
+    private String id; // Firebase sử dụng chuỗi ID
+    private String orderId;
     private float starRate;
     private String review;
-    private Date createdAt;
+    private long createdAt; // Lưu dưới dạng timestamp
 
     public ShipperEvaluation() {
+        // Constructor rỗng cần thiết cho Firebase
     }
 
-    public ShipperEvaluation(int id, int orderId, float starRate, String review, Date createdAt) {
+    public ShipperEvaluation(String id, String orderId, float starRate, String review, long createdAt) {
         this.id = id;
         this.orderId = orderId;
         this.starRate = starRate;
@@ -28,19 +19,19 @@ public class ShipperEvaluation {
         this.createdAt = createdAt;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 
@@ -60,11 +51,15 @@ public class ShipperEvaluation {
         this.review = review;
     }
 
-    public Date getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+    public interface OnFindEvaluationListener {
+        void onSuccess(ShipperEvaluation evaluation);
+        void onFailure(String errorMessage);
     }
 }
