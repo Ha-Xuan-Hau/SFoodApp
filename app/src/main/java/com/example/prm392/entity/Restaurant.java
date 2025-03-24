@@ -13,7 +13,7 @@ public class Restaurant {
         // Constructor rỗng cần thiết cho Firebase
     }
 
-    public Restaurant(int id, String name, String email, String pass, String phone, String status, float rating) {
+    public Restaurant(String id, String name, String email, String pass, String phone, String status, float rating) {
         this.id = id;
         this.name = name;
         this.email = email;
