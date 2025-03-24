@@ -2,7 +2,9 @@ package com.example.prm392;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,10 +19,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.Manifest;
 import com.example.prm392.Adaptor.MenuItemsAdapter;
 import com.example.prm392.DTO.MenuItemDTO;
 import com.example.prm392.entity.Restaurant;
@@ -39,7 +43,7 @@ public class MenuItemsActivity extends AppCompatActivity {
     private SearchView searchView;
     private Spinner spinnerFilterPrice;
     private List<MenuItemDTO> originalMenuItemsList = new ArrayList<>();
-
+    private Uri selectedImageUri;;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +151,9 @@ public class MenuItemsActivity extends AppCompatActivity {
 
         edtImageUrl.setFocusable(false);
         edtImageUrl.setOnClickListener(v -> openImagePicker());
-
+        if (selectedImageUri != null) {
+            edtImageUrl.setText(selectedImageUri.toString());
+        }
         List<Restaurant> restaurantList = new ArrayList<>();
         List<String> restaurantNames = new ArrayList<>();
 
@@ -170,7 +176,7 @@ public class MenuItemsActivity extends AppCompatActivity {
                     String name = edtName.getText().toString().trim();
                     String description = edtDescription.getText().toString().trim();
                     String priceStr = edtPrice.getText().toString().trim();
-                    String imageUrl = edtImageUrl.getText().toString().trim();
+                    String imageUrl = selectedImageUri.toString();
 
                     if (name.isEmpty() || description.isEmpty() || priceStr.isEmpty()) {
                         Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
@@ -205,7 +211,36 @@ public class MenuItemsActivity extends AppCompatActivity {
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            getContentResolver().takePersistableUriPermission(
+                    selectedImageUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            );
+            showAddMenuItemDialog();
+        }
+
+    }
+
+    private void checkStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  // Android 13+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 100);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
+            }
+        }
+    }
 
 }
 
