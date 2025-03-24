@@ -1,58 +1,39 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
 import java.util.Date;
 
-
-@Entity(tableName = "OrderDetail",
-        foreignKeys = {
-                @ForeignKey(entity = OrderShip.class, parentColumns = "orderShipId", childColumns = "orderId"),
-                @ForeignKey(entity = MenuItems.class, parentColumns = "id", childColumns = "menuItemsId")
-        })
 public class OrderDetail {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    private int orderId;
-    private int menuItemsId;
+    private String id; // Chuyển từ int sang String để phù hợp với Firebase
+    private String menuItemsId; // Cũng đổi từ int sang String để khớp với Firebase
     private int quantity;
     private double price;
-    private Date completedAt;
+    private long completedAt; // Lưu timestamp thay vì Date
 
     public OrderDetail() {
+        // Bắt buộc để Firebase deserialize dữ liệu
     }
 
-    public OrderDetail(int id, int orderId, int menuItemsId, int quantity, double price, Date completedAt) {
+    public OrderDetail(String id, String menuItemsId, int quantity, double price, long completedAt) {
         this.id = id;
-        this.orderId = orderId;
         this.menuItemsId = menuItemsId;
         this.quantity = quantity;
         this.price = price;
         this.completedAt = completedAt;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
-
-    public int getMenuItemsId() {
+    public String getMenuItemsId() {
         return menuItemsId;
     }
 
-    public void setMenuItemsId(int menuItemsId) {
+    public void setMenuItemsId(String menuItemsId) {
         this.menuItemsId = menuItemsId;
     }
 
@@ -72,12 +53,12 @@ public class OrderDetail {
         this.price = price;
     }
 
-    public Date getCompletedAt() {
+    public long getCompletedAt() {
         return completedAt;
     }
 
-    public void setCompletedAt(Date completedAt) {
+    public void setCompletedAt(long completedAt) {
         this.completedAt = completedAt;
     }
-}
 
+}

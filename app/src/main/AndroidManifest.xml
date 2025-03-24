@@ -26,6 +26,15 @@
         </activity>
 
         <activity
+            android:name=".OrderDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ShipperActivity"
+            android:exported="true" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

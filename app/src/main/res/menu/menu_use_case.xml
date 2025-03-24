@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:title="Trang chủ"
+        />
+    <item
+        android:id="@+id/nav_your_ordership"
+        android:title="Đơn hàng của bạn"
+        />
+    <item
+        android:id="@+id/nav_accept_ordership"
+        android:title="Chờ xác nhận"
+        />
+    <item
+        android:id="@+id/nav_evaluator"
+        android:title="Đánh giá"
+        />
+</menu>

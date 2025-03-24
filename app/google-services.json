@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "353077152251",
+    "firebase_url": "https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "prm392-sfood",
+    "storage_bucket": "prm392-sfood.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353077152251:android:2682bc336e99bdb2a2635e",
+        "android_client_info": {
+          "package_name": "com.example.prm392"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjKAnZupEQ2HBUMMoq3ALY0pmnrFepKhI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

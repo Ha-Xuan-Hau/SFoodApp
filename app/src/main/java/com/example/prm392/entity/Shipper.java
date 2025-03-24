@@ -1,48 +1,33 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
-
-@Entity(tableName = "Shipper")
-
 public class Shipper {
-    @PrimaryKey(autoGenerate = true)
-    private int shipperId;
+    private String shipperId; // ID được lưu dưới dạng String
     private String fullName;
     private String phone;
     private String cccd;
     private String email;
-    private String password;
+    private String pass;
     private String status;
 
     public Shipper() {
+        // Constructor rỗng cần thiết cho Firebase
     }
 
-
-    public Shipper(int shipperId, String fullName, String phone, String cccd, String email, String password, String status) {
+    public Shipper(String shipperId, String fullName, String phone, String cccd, String email, String pass, String status) {
         this.shipperId = shipperId;
         this.fullName = fullName;
         this.phone = phone;
         this.cccd = cccd;
         this.email = email;
-        this.password = password;
+        this.pass = pass;
         this.status = status;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public int getShipperId() {
+    public String getShipperId() {
         return shipperId;
     }
 
-    public void setShipperId(int shipperId) {
+    public void setShipperId(String shipperId) {
         this.shipperId = shipperId;
     }
 
@@ -78,6 +63,14 @@ public class Shipper {
         this.email = email;
     }
 
+    public String getPass() {
+        return pass;
+    }
+
+    public void setPass(String pass) {
+        this.pass = pass;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -86,5 +79,3 @@ public class Shipper {
         this.status = status;
     }
 }
-
-

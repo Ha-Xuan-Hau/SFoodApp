@@ -1,12 +1,7 @@
 package com.example.prm392.entity;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
-@Entity(tableName = "Restaurants")
 public class Restaurant {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
+    private String id;  // ID của nhà hàng (Firebase sử dụng String làm key)
     private String name;
     private String email;
     private String pass;
@@ -15,9 +10,10 @@ public class Restaurant {
     private float rating;
 
     public Restaurant() {
+        // Constructor rỗng cần thiết cho Firebase
     }
 
-    public Restaurant(int id, String name, String email, String pass, String phone, String status, float rating) {
+    public Restaurant(String id, String name, String email, String pass, String phone, String status, float rating) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -27,11 +23,11 @@ public class Restaurant {
         this.rating = rating;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -83,4 +79,3 @@ public class Restaurant {
         this.rating = rating;
     }
 }
-
