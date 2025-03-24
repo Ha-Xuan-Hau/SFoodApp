@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    implementation("org.mindrot:jbcrypt:0.4")
     implementation ("androidx.room:room-runtime:2.6.1")
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)

@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.prm392.entity.CustomerUser;
 import com.example.prm392.repository.CustomerUserRepository;
+import com.example.prm392.service.PasswordUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,19 +28,20 @@ import java.util.concurrent.Executors;
 public class CustomerRegisterActivity extends AppCompatActivity {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private CustomerUserRepository customerUserRepository;
-    private EditText edtEmail, edtPhone, edtAddress, edtPassword, edtConfirmPassword;
+    private EditText edtName, edtEmail, edtPhone, edtAddress, edtPassword, edtConfirmPassword;
     private Button btnRegister;
-    private String email, phone, address, password;
+    private String name,email, phone, address, password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        customerUserRepository = new CustomerUserRepository(this);
+        customerUserRepository = new CustomerUserRepository();
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_customer_register);
 
         // Ánh xạ ID từ XML
         edtEmail = findViewById(R.id.edt_register_CusEmail);
+        edtName = findViewById(R.id.edt_register_cusname);
         edtPhone = findViewById(R.id.edt_register_cusPhone);
         edtAddress = findViewById(R.id.edt_register_cusAddress);
         edtPassword = findViewById(R.id.edt_register_cusPassword);
@@ -57,12 +59,13 @@ public class CustomerRegisterActivity extends AppCompatActivity {
     }
     private void handleRegister() {
         email = edtEmail.getText().toString().trim();
+        name = edtName.getText().toString().trim();
         phone = edtPhone.getText().toString().trim();
         address = edtAddress.getText().toString().trim();
         password = edtPassword.getText().toString().trim();
         String confirmPassword = edtConfirmPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(phone) || TextUtils.isEmpty(address)
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(name) || TextUtils.isEmpty(phone) || TextUtils.isEmpty(address)
                 || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
             return;
@@ -88,20 +91,20 @@ public class CustomerRegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Kiểm tra email trên background thread sau khi các điều kiện khác đã được kiểm tra
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> {
-            if (customerUserRepository.GetCustomerByEmail(email) != null) {
-                runOnUiThread(() -> Toast.makeText(this, "Email này đã được đăng ký!", Toast.LENGTH_SHORT).show());
-                return;
+        // Kiểm tra email tồn tại
+        customerUserRepository.getCustomerByEmail(email, new CustomerUserRepository.OnFindUserListener() {
+            @Override
+            public void onSuccess(CustomerUser user) {
+                showToast("Email đã được đăng ký!");
             }
 
-            // Nếu email chưa tồn tại, tiến hành đăng ký
-            runOnUiThread(() -> {
+            @Override
+            public void onFailure(String errorMessage) {
+                // Chuyển sang màn hình OTP và truyền dữ liệu
                 Intent intent = new Intent(CustomerRegisterActivity.this, OTPactivity.class);
                 intent.putExtra("email", email);
                 otpLauncher.launch(intent);
-            });
+            }
         });
     }
 
@@ -112,7 +115,7 @@ public class CustomerRegisterActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK) {
                     // Chạy đăng ký trên một thread khác
                     executorService.execute(() -> {
-                        customerUserRepository.Register(email, phone, address, password);
+                        customerUserRepository.Register(name,email, phone, address, PasswordUtil.hashPassword(password));
 
                         // Chuyển về UI thread để mở LoginActivity
                         runOnUiThread(() -> {
@@ -127,4 +130,7 @@ public class CustomerRegisterActivity extends AppCompatActivity {
                 }
             }
     );
+    private void showToast(String message) {
+        runOnUiThread(() -> Toast.makeText(CustomerRegisterActivity.this, message, Toast.LENGTH_SHORT).show());
+    }
 }

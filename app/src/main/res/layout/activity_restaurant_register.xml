@@ -2,17 +2,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/tv_OTPemail"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CustomerRegisterActivity">
+    tools:context=".RestaurantRegisterActivity">
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="182dp"
         android:layout_height="38dp"
         android:layout_marginTop="50dp"
-        android:text="Đăng ký người dùng"
+        android:text="Đăng ký Nhà hàng"
         android:textColor="@color/orange"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/edt_register_CusEmail"
+        android:id="@+id/edt_register_resEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -33,45 +33,46 @@
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <EditText
-        android:id="@+id/edt_register_cusPhone"
+        android:id="@+id/edt_register_resPhone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="49dp"
         android:ems="10"
         android:hint="Số điện thoại"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_cusname" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_register_resName" />
 
     <EditText
-        android:id="@+id/edt_register_cusAddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="52dp"
-        android:ems="10"
-        android:hint="Địa chỉ"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_cusPhone" />
-
-    <EditText
-        android:id="@+id/edt_register_cusPassword"
+        android:id="@+id/edt_register_resName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="46dp"
+        android:ems="10"
+        android:hint="Tên nhà hàng"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edt_register_resEmail" />
+
+    <EditText
+        android:id="@+id/edt_register_resPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="38dp"
         android:ems="10"
         android:hint="Mật Khẩu"
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_cusAddress" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_register_resPhone" />
 
     <EditText
-        android:id="@+id/edt_register_cofirmPass"
+        android:id="@+id/edt_register_rescofirmPass"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="45dp"
@@ -80,10 +81,10 @@
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_cusPassword" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_register_resPassword" />
 
     <Button
-        android:id="@+id/btn_customerRegister"
+        android:id="@+id/btn_resRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
@@ -91,18 +92,6 @@
         android:text="Đăng ký"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_cofirmPass" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_register_rescofirmPass" />
 
-    <EditText
-        android:id="@+id/edt_register_cusname"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="31dp"
-        android:ems="10"
-        android:hint="Tên của bạn"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_register_CusEmail" />
 </androidx.constraintlayout.widget.ConstraintLayout>

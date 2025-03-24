@@ -32,7 +32,7 @@ public class ShipRegisterActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        shipperRepository = new ShipperRepository(this);
+        shipperRepository = new ShipperRepository();
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ship_register);

@@ -13,9 +13,11 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.prm392.entity.CustomerUser;
 import com.example.prm392.repository.CustomerUserRepository;
 import com.example.prm392.repository.RestaurantRepository;
 import com.example.prm392.repository.ShipperRepository;
+import com.example.prm392.service.PasswordUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,9 +35,9 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        customerUserRepository = new CustomerUserRepository(this);
-        shipperRepository = new ShipperRepository(this);
-        restaurantRepository = new RestaurantRepository(this);
+        customerUserRepository = new CustomerUserRepository();
+        shipperRepository = new ShipperRepository();
+        restaurantRepository = new RestaurantRepository();
 
         sharedPreferences = getSharedPreferences("account", MODE_PRIVATE);
         userRole = sharedPreferences.getString("userRole", "customer");
@@ -108,56 +110,65 @@ public class LoginActivity extends AppCompatActivity {
         String pass = edtPassword.getText().toString().trim();
 
         if (email.isEmpty() || pass.isEmpty()) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Hãy điền tài khoản và mật khẩu", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!isValidEmail(email)) {
-            Toast.makeText(this, "email này không tồn tại", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Email này không tồn tại", Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean loginSuccess = false;
-
 
         executorService.execute(() -> {
-            Object user = null;
-
             if (userRole.equals("customer")) {
-                user = customerUserRepository.login(email, pass);
+                customerUserRepository.login(email, pass, new CustomerUserRepository.OnLoginListener() {
+                    @Override
+                    public void onSuccess(CustomerUser user) {
+                        runOnUiThread(() -> handleLoginSuccess(user));
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        runOnUiThread(() -> Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show());
+                    }
+                });
             } else if (userRole.equals("shipper")) {
-                user = shipperRepository.login(email, pass);
+                //Object user = shipperRepository.login(email, pass);
+                //runOnUiThread(() -> handleLoginSuccess(user));
             } else if (userRole.equals("restaurant")) {
-                user = restaurantRepository.login(email, pass);
+                //Object user = restaurantRepository.login(email, pass);
+                //runOnUiThread(() -> handleLoginSuccess(user));
             }
-
-            // Chuyển về UI Thread để cập nhật giao diện
-            Object finalUser = user;
-            runOnUiThread(() -> {
-                if (finalUser != null) {
-                    Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                    if (cbRemember.isChecked()) {
-                        saveCredentials(email, pass);
-                    } else {
-                        clearSavedCredentials();
-                    }
-                    Intent intent = null;
-                    if (userRole.equals("customer")) {
-                        intent = new Intent(LoginActivity.this, MainActivity.class);
-                    } else if (userRole.equals("shipper")) {
-                        intent = new Intent(LoginActivity.this, MainActivity.class);
-                    } else if (userRole.equals("restaurant")) {
-                        intent = new Intent(LoginActivity.this, MainActivity.class);
-                    }
-
-                    if (intent != null) {
-                        startActivity(intent);
-                        finish();
-                    }
-                } else {
-                    Toast.makeText(LoginActivity.this, "Tài khoản hoặc mật khẩu không đúng", Toast.LENGTH_SHORT).show();
-                }
-            });
         });
     }
+
+    // Hàm xử lý đăng nhập thành công
+    private void handleLoginSuccess(Object user) {
+        if (user != null) {
+            Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+            if (cbRemember.isChecked()) {
+                saveCredentials(edtEmail.getText().toString().trim(), edtPassword.getText().toString().trim());
+            } else {
+                clearSavedCredentials();
+            }
+
+            Intent intent = null;
+            if (userRole.equals("customer")) {
+                intent = new Intent(LoginActivity.this, MainActivity.class);
+            } else if (userRole.equals("shipper")) {
+                intent = new Intent(LoginActivity.this, ShipperActivity.class);
+            } else if (userRole.equals("restaurant")) {
+                intent = new Intent(LoginActivity.this, MainActivity.class);
+            }
+
+            if (intent != null) {
+                startActivity(intent);
+                finish();
+            }
+        } else {
+            Toast.makeText(LoginActivity.this, "Tài khoản hoặc mật khẩu không đúng", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 
     private void loadSavedCredentials() {

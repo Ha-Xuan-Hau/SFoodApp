@@ -22,7 +22,8 @@ public class CustomerUser {
         this.password = password;
         this.pref = pref;
     }
-    public CustomerUser(String email, String phone, String address, String password, String pref) {
+    public CustomerUser(String fullName,String email, String phone, String address, String password, String pref) {
+        this.fullName = fullName;
         this.email = email;
         this.phone = phone;
         this.address = address;
