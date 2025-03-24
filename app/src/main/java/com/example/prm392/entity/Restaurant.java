@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey;
 public class Restaurant {
     @PrimaryKey(autoGenerate = true)
     private int id;
+    private String name;
     private String email;
     private String pass;
     private String phone;
@@ -16,8 +17,9 @@ public class Restaurant {
     public Restaurant() {
     }
 
-    public Restaurant(int id, String email, String pass, String phone, String status, float rating) {
+    public Restaurant(int id, String name, String email, String pass, String phone, String status, float rating) {
         this.id = id;
+        this.name = name;
         this.email = email;
         this.pass = pass;
         this.phone = phone;
@@ -31,6 +33,14 @@ public class Restaurant {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
