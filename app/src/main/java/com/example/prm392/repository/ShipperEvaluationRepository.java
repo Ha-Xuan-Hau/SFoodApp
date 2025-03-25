@@ -13,12 +13,8 @@ public class ShipperEvaluationRepository {
     }
 
     // Thêm đánh giá shipper vào Firebase
-    public void insert(ShipperEvaluation evaluation, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        DatabaseReference evalRef = firebaseDatabase.push();
-        evaluation.setId(evalRef.getKey()); // Chuyển hash thành số dương
-        evalRef.setValue(evaluation)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+    public void insert(ShipperEvaluation evaluation) {
+        firebaseDatabase.child(evaluation.getId()).setValue(evaluation);
     }
 
     // Lấy đánh giá theo Order ID

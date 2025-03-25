@@ -5,13 +5,17 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.example.prm392.entity.Restaurant;
-import com.example.prm392.entity.Shipper;
 import com.example.prm392.service.PasswordUtil;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantRepository {
@@ -23,16 +27,33 @@ public class RestaurantRepository {
 
     // Thêm nhà hàng vào Firebase
     public void insert(Restaurant restaurant, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        DatabaseReference restaurantRef = firebaseDatabase.push();
-        restaurant.setId(restaurantRef.getKey()); // Chuyển hash thành số dương
-        restaurantRef.setValue(restaurant)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+        firebaseDatabase.child(restaurant.getId()).setValue(restaurant);
     }
 
     // Lấy tất cả nhà hàng
-    public void getAllRestaurants(ValueEventListener listener) {
-        firebaseDatabase.addListenerForSingleValueEvent(listener);
+    public LiveData<List<Restaurant>> getAllRestaurants() {
+        MutableLiveData<List<Restaurant>> liveDataRestaurants = new MutableLiveData<>();
+
+        firebaseDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Restaurant> restaurantList = new ArrayList<>();
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    Restaurant restaurant = data.getValue(Restaurant.class);
+                    if (restaurant != null) {
+                        restaurantList.add(restaurant);
+                    }
+                }
+                liveDataRestaurants.setValue(restaurantList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                liveDataRestaurants.setValue(null);
+            }
+        });
+
+        return liveDataRestaurants;
     }
 
     // Cập nhật thông tin nhà hàng
@@ -41,6 +62,25 @@ public class RestaurantRepository {
                 .setValue(restaurant)
                 .addOnSuccessListener(onSuccess)
                 .addOnFailureListener(onFailure);
+    }
+
+    public interface OnRestaurantLoadedListener {
+        void onRestaurantLoaded(Restaurant restaurant);
+    }
+
+    public void getRestaurantById(String restaurantId, OnRestaurantLoadedListener listener) {
+        firebaseDatabase.child(restaurantId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Restaurant restaurant = snapshot.getValue(Restaurant.class);
+                listener.onRestaurantLoaded(restaurant);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onRestaurantLoaded(null);
+            }
+        });
     }
 
     // Xóa nhà hàng

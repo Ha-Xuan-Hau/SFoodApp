@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp"
+    android:background="@android:color/white"
+    android:elevation="2dp">
+
+    <!-- Ảnh món ăn -->
+    <ImageView
+        android:id="@+id/item_image"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_launcher_background"
+       />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="10dp">
+
+        <!-- Tên món ăn -->
+        <TextView
+            android:id="@+id/item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên món"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <!-- Giá món ăn -->
+        <TextView
+            android:id="@+id/item_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Giá"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"/>
+
+        <TextView
+            android:id="@+id/txt_restaurant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nhà Hàng"
+            android:textSize="14sp"
+            android:textColor="@android:color/background_dark"/>
+    </LinearLayout>
+
+    <!-- Nút xóa -->
+    <ImageView
+        android:id="@+id/btn_delete"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_delete"
+        android:padding="5dp"/>
+</LinearLayout>

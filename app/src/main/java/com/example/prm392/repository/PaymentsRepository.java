@@ -13,12 +13,9 @@ public class PaymentsRepository {
     }
 
     // Thêm thanh toán vào Firebase
-    public void insert(Payments payment, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        DatabaseReference paymentRef = firebaseDatabase.push();
-        payment.setId(paymentRef.getKey()); // Chuyển hash về số dương
-        paymentRef.setValue(payment)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+    public void insert(Payments payment) {
+        firebaseDatabase.child(payment.getId()).setValue(payment);
+
     }
 
     // Lấy thanh toán theo orderId

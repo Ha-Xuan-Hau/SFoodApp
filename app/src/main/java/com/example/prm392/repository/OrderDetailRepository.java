@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -21,18 +22,17 @@ public class OrderDetailRepository {
 
     // Thêm OrderDetail vào Firebase
     public void insert(OrderDetail orderDetail) {
-        String id = UUID.randomUUID().toString(); // Tạo ID ngẫu nhiên
-        orderDetail.setId(id);
-        databaseReference.child(id).setValue(orderDetail);
+        databaseReference.child(orderDetail.getId()).setValue(orderDetail);
     }
 
     // Lấy OrderDetail theo ID
     public void findById(String id, OnFindOrderDetailListener listener) {
-        databaseReference.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+        Query query = databaseReference.orderByChild("id").equalTo(id);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    OrderDetail orderDetail = dataSnapshot.getValue(OrderDetail.class);
+                    OrderDetail orderDetail = dataSnapshot.getChildren().iterator().next().getValue(OrderDetail.class);
                     listener.onSuccess(orderDetail);
                 } else {
                     listener.onFailure("Không tìm thấy đơn hàng chi tiết");
