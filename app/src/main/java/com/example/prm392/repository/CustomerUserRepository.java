@@ -1,6 +1,7 @@
 package com.example.prm392.repository;
 
 import com.example.prm392.entity.CustomerUser;
+import com.example.prm392.service.PasswordUtil;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
@@ -33,7 +34,7 @@ public class CustomerUserRepository {
                         if (dataSnapshot.exists()) {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 CustomerUser user = snapshot.getValue(CustomerUser.class);
-                                if (user.getPassword().equals(password)) {
+                                if (PasswordUtil.checkPassword(password, user.getPassword())) {
                                     listener.onSuccess(user);
                                     return;
                                 }
@@ -79,5 +80,57 @@ public class CustomerUserRepository {
     public interface OnFindUserListener {
         void onSuccess(CustomerUser user);
         void onFailure(String errorMessage);
+    }
+
+    public void Register(String name, String email, String phone, String address, String password) {
+        databaseReference.orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int newId = 1; // Mặc định nếu không có dữ liệu nào
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    try {
+                        int lastId = Integer.parseInt(snapshot.getKey()); // Lấy ID cuối cùng
+                        newId = lastId + 1; // Cộng thêm 1
+                    } catch (NumberFormatException e) {
+                        System.err.println("Lỗi chuyển đổi ID: " + e.getMessage());
+                    }
+                }
+
+                // Tạo user với ID mới
+                CustomerUser customerUser = new CustomerUser(String.valueOf(newId),name, email, phone, address, password,"");
+                databaseReference.child(String.valueOf(newId)).setValue(customerUser)
+                        .addOnSuccessListener(aVoid -> System.out.println("Đăng ký thành công với ID: "))
+                        .addOnFailureListener(e -> System.err.println("Lỗi đăng ký: " + e.getMessage()));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.err.println("Lỗi kết nối Firebase: " + databaseError.getMessage());
+            }
+        });
+    }
+
+
+    public void getCustomerByEmail(String email, OnFindUserListener listener) {
+        databaseReference.orderByChild("email").equalTo(email)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                CustomerUser user = snapshot.getValue(CustomerUser.class);
+                                listener.onSuccess(user);
+                                return;
+                            }
+                        }
+                        listener.onFailure("Không tìm thấy người dùng với email này.");
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        listener.onFailure("Lỗi kết nối Firebase: " + databaseError.getMessage());
+                    }
+                });
     }
 }
