@@ -162,7 +162,7 @@ public class MenuItemsActivity extends AppCompatActivity {
             restaurantNames.clear();
 
             for (Restaurant restaurant : restaurants) {
-                restaurantNames.add(restaurant.getEmail());
+                restaurantNames.add(restaurant.getName());
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this,

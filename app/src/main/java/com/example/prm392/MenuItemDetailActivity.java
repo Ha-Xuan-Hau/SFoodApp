@@ -47,11 +47,11 @@ public class MenuItemDetailActivity extends AppCompatActivity {
 
         // Nhận dữ liệu từ Intent
         Intent intent = getIntent();
-        int id = getIntent().getIntExtra("id", -1);
+        String id = getIntent().getStringExtra("id");
         String menuName = intent.getStringExtra("menu_name");
         float price = intent.getFloatExtra("price",0);
         String description = intent.getStringExtra("description");
-        int selectedRestaurant = intent.getIntExtra("restaurant_id",-1);
+        String selectedRestaurant = intent.getStringExtra("restaurant_id");
 
         // Set dữ liệu lên UI
         etId.setText(String.valueOf(id));
@@ -69,8 +69,8 @@ public class MenuItemDetailActivity extends AppCompatActivity {
             restaurantNames.clear();
             int selectedPosition = -1;
             for (int i = 0; i < restaurants.size(); i++) {
-                restaurantNames.add(restaurants.get(i).getEmail());
-                if (Integer.parseInt(restaurants.get(i).getId()) == selectedRestaurant) {
+                restaurantNames.add(restaurants.get(i).getName());
+                if (restaurants.get(i).getId() == selectedRestaurant) {
                     selectedPosition = i; // Lưu vị trí của nhà hàng cần chọn
                 }
             }
