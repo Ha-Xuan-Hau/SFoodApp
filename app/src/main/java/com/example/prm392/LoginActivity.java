@@ -173,13 +173,15 @@ public class LoginActivity extends AppCompatActivity {
 
             Intent intent = null;
             if (userRole.equals("customer")) {
-                intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent = new Intent(LoginActivity.this, MenuItemsActivity.class);
             } else if (userRole.equals("shipper")) {
                 intent = new Intent(LoginActivity.this, ShipperActivity.class);
                 Shipper shipperUser = (Shipper) user;
                 intent.putExtra("shipperId", shipperUser.getShipperId());
             } else if (userRole.equals("restaurant")) {
-                intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent = new Intent(LoginActivity.this, MenuItemsActivity.class);
+                Restaurant restaurant = (Restaurant) user;
+                intent.putExtra("restaurantId", restaurant.getId());
             }
 
             if (intent != null) {
