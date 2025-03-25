@@ -12,6 +12,15 @@ public class MenuItems {
     public MenuItems() {
     }
 
+    public MenuItems(String restaurantId, String name, String description, double price, String imageUrl, String status) {
+        this.restaurantId = restaurantId;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.status = status;
+    }
+
     public MenuItems(String id, String restaurantId, String name, String description, double price, String imageUrl, String status) {
         this.id = id;
         this.restaurantId = restaurantId;
