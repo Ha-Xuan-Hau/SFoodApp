@@ -14,6 +14,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.prm392.entity.CustomerUser;
+import com.example.prm392.entity.Restaurant;
+import com.example.prm392.entity.Shipper;
 import com.example.prm392.repository.CustomerUserRepository;
 import com.example.prm392.repository.RestaurantRepository;
 import com.example.prm392.repository.ShipperRepository;
@@ -73,7 +75,7 @@ public class LoginActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(view -> registerUser());
         //điều hướng đến màn hình quên mật khẩu
         btnForgotPass.setOnClickListener(View -> {
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
             startActivity(intent);
             finish();
         });
@@ -95,11 +97,11 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
         }
         if (userRole.equals("shipper")) {
-            Intent intent = new Intent(LoginActivity.this, CustomerRegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, ShipRegisterActivity.class);
             startActivity(intent);
         }
         if (userRole.equals("restaurant")) {
-            Intent intent = new Intent(LoginActivity.this, CustomerRegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, RestaurantRegisterActivity.class);
             startActivity(intent);
         }
         finish();
@@ -132,11 +134,29 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
             } else if (userRole.equals("shipper")) {
-                //Object user = shipperRepository.login(email, pass);
-                //runOnUiThread(() -> handleLoginSuccess(user));
+                shipperRepository.login(email, pass, new ShipperRepository.OnLoginListener() {
+                    @Override
+                    public void onSuccess(Shipper user) {
+                        runOnUiThread(() -> handleLoginSuccess(user));
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        runOnUiThread(() -> Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show());
+                    }
+                });
             } else if (userRole.equals("restaurant")) {
-                //Object user = restaurantRepository.login(email, pass);
-                //runOnUiThread(() -> handleLoginSuccess(user));
+                restaurantRepository.login(email, pass, new RestaurantRepository.OnLoginListener() {
+                    @Override
+                    public void onSuccess(Restaurant user) {
+                        runOnUiThread(() -> handleLoginSuccess(user));
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        runOnUiThread(() -> Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show());
+                    }
+                });
             }
         });
     }
@@ -156,6 +176,8 @@ public class LoginActivity extends AppCompatActivity {
                 intent = new Intent(LoginActivity.this, MainActivity.class);
             } else if (userRole.equals("shipper")) {
                 intent = new Intent(LoginActivity.this, ShipperActivity.class);
+                Shipper shipperUser = (Shipper) user;
+                intent.putExtra("shipperId", shipperUser.getShipperId());
             } else if (userRole.equals("restaurant")) {
                 intent = new Intent(LoginActivity.this, MainActivity.class);
             }

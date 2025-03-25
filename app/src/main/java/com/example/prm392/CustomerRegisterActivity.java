@@ -3,6 +3,7 @@ package com.example.prm392;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -46,18 +47,21 @@ public class CustomerRegisterActivity extends AppCompatActivity {
         edtAddress = findViewById(R.id.edt_register_cusAddress);
         edtPassword = findViewById(R.id.edt_register_cusPassword);
         edtConfirmPassword = findViewById(R.id.edt_register_cofirmPass);
-        btnRegister = findViewById(R.id.btn_customerRegister);
+        btnRegister = (Button)findViewById(R.id.btn_customerRegister);
 
         // Xử lý sự kiện click nút Đăng ký
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View v) {
                 handleRegister();
             }
+
         });
 
     }
     private void handleRegister() {
+        Log.d("CustomerActivity", "run in onclick to button click");
         email = edtEmail.getText().toString().trim();
         name = edtName.getText().toString().trim();
         phone = edtPhone.getText().toString().trim();
@@ -115,7 +119,7 @@ public class CustomerRegisterActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK) {
                     // Chạy đăng ký trên một thread khác
                     executorService.execute(() -> {
-                        customerUserRepository.Register(name,email, phone, address, PasswordUtil.hashPassword(password));
+                        customerUserRepository.Register(name,email, phone, address,password);
 
                         // Chuyển về UI thread để mở LoginActivity
                         runOnUiThread(() -> {
@@ -124,9 +128,6 @@ public class CustomerRegisterActivity extends AppCompatActivity {
                             finish();
                         });
                     });
-                    Intent intent = new Intent(CustomerRegisterActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
                 }
             }
     );

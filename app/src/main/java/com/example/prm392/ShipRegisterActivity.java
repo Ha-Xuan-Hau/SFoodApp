@@ -13,12 +13,9 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import com.example.prm392.repository.CustomerUserRepository;
+import com.example.prm392.entity.Shipper;
 import com.example.prm392.repository.ShipperRepository;
+import com.example.prm392.service.PasswordUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,9 +23,9 @@ import java.util.concurrent.Executors;
 public class ShipRegisterActivity extends AppCompatActivity {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private ShipperRepository shipperRepository;
-    private EditText edtEmail, edtPhone, edtAddress,edtcccd, edtPassword, edtConfirmPassword;
+    private EditText edtEmail,edtName, edtPhone,edtcccd, edtPassword, edtConfirmPassword;
     private Button btnRegister;
-    private String email, phone, address,cccd, password;
+    private String email,name, phone,cccd, password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +36,12 @@ public class ShipRegisterActivity extends AppCompatActivity {
 
         // Ánh xạ ID từ XML
         edtEmail = findViewById(R.id.edt_register_shipEmail);
+        edtName = findViewById(R.id.edt_register_shipname);
         edtPhone = findViewById(R.id.edt_register_shipPhone);
-        edtAddress = findViewById(R.id.edt_register_shipAddress);
         edtPassword = findViewById(R.id.edt_register_shipPassword);
         edtcccd = findViewById(R.id.edt_shipcccd);
         edtConfirmPassword = findViewById(R.id.edt_register_shipcofirmPass);
-        btnRegister = findViewById(R.id.btn_shipperRegister);
+        btnRegister = (Button)findViewById(R.id.btn_shipperRegister);
 
         // Xử lý sự kiện click nút Đăng ký
         btnRegister.setOnClickListener(new View.OnClickListener() {
@@ -57,13 +54,13 @@ public class ShipRegisterActivity extends AppCompatActivity {
     }
     private void handleRegister() {
         email = edtEmail.getText().toString().trim();
+        name = edtName.getText().toString().trim();
         phone = edtPhone.getText().toString().trim();
-        address = edtAddress.getText().toString().trim();
         cccd = edtcccd.getText().toString().trim();
         password = edtPassword.getText().toString().trim();
         String confirmPassword = edtConfirmPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(phone) || TextUtils.isEmpty(address)
+        if (TextUtils.isEmpty(email) ||TextUtils.isEmpty(name)|| TextUtils.isEmpty(phone)
                 || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
             return;
@@ -93,21 +90,22 @@ public class ShipRegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Kiểm tra email trên background thread sau khi các điều kiện khác đã được kiểm tra
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> {
-//            if (shipperRepository.GetByEmail(email) != null) {
-//                runOnUiThread(() -> Toast.makeText(this, "Email này đã được đăng ký!", Toast.LENGTH_SHORT).show());
-//                return;
-//            }
+        // Kiểm tra email tồn tại
+        shipperRepository.getByEmail(email, new ShipperRepository.OnFindUserListener() {
+            @Override
+            public void onSuccess(Shipper user) {
+                showToast("Email đã được đăng ký 1!");
+            }
 
-            // Nếu email chưa tồn tại, tiến hành đăng ký
-            runOnUiThread(() -> {
+            @Override
+            public void onFailure(String errorMessage) {
+                // Chuyển sang màn hình OTP và truyền dữ liệu
                 Intent intent = new Intent(ShipRegisterActivity.this, OTPactivity.class);
                 intent.putExtra("email", email);
                 otpLauncher.launch(intent);
-            });
+            }
         });
+
     }
 
 
@@ -117,7 +115,7 @@ public class ShipRegisterActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK) {
                     // Chạy đăng ký trên một thread khác
                     executorService.execute(() -> {
-                        //shipperRepository.Register(email, phone, address, password);
+                        shipperRepository.Register(name,email, phone, cccd, password);
 
                         // Chuyển về UI thread để mở LoginActivity
                         runOnUiThread(() -> {
@@ -126,10 +124,10 @@ public class ShipRegisterActivity extends AppCompatActivity {
                             finish();
                         });
                     });
-                    Intent intent = new Intent(ShipRegisterActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
                 }
             }
     );
+    private void showToast(String message) {
+        runOnUiThread(() -> Toast.makeText(ShipRegisterActivity.this, message, Toast.LENGTH_SHORT).show());
+    }
 }
