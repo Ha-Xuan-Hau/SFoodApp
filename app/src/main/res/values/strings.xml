@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">PRM392</string>
-<<<<<<< HEAD
     <string name="title_activity_menu_items">MenuItemsActivity</string>
     <string-array name="status_array">
         <item>available</item>
@@ -11,8 +10,6 @@
         <item>Dưới 50K</item>
         <item>Trên 50K</item>
     </string-array>
-</resources>
-=======
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -23,4 +20,4 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
 </resources>
->>>>>>> main
+

@@ -59,8 +59,8 @@ public class MenuItemDetailActivity extends AppCompatActivity {
         etPrice.setText(String.valueOf(price));
         etDescription.setText(description);
 
-        menuItemsViewModel = new ViewModelProvider(this, new MenuItemsViewModelFactory(this))
-                .get(MenuItemsViewModel.class);
+        menuItemsViewModel = new ViewModelProvider(this).get(MenuItemsViewModel.class);
+
 
 
         menuItemsViewModel.getAllRestaurants().observe(this, restaurants -> {
@@ -70,7 +70,7 @@ public class MenuItemDetailActivity extends AppCompatActivity {
             int selectedPosition = -1;
             for (int i = 0; i < restaurants.size(); i++) {
                 restaurantNames.add(restaurants.get(i).getEmail());
-                if (restaurants.get(i).getId() == selectedRestaurant) {
+                if (Integer.parseInt(restaurants.get(i).getId()) == selectedRestaurant) {
                     selectedPosition = i; // Lưu vị trí của nhà hàng cần chọn
                 }
             }
@@ -93,12 +93,11 @@ public class MenuItemDetailActivity extends AppCompatActivity {
     }
 
     private void updateMenuItem() {
-        // Lấy dữ liệu từ input
-        int id = Integer.parseInt(etId.getText().toString().trim());
+        String id = etId.getText().toString().trim();
         String updatedName = etMenuName.getText().toString().trim();
         float updatedPrice = Float.parseFloat(etPrice.getText().toString().trim());
         String updatedDescription = etDescription.getText().toString().trim();
-        int selectedRestaurantId = restaurantList.get(spinnerRestaurant.getSelectedItemPosition()).getId();
+        String selectedRestaurantId = restaurantList.get(spinnerRestaurant.getSelectedItemPosition()).getId();
 
         MenuItems updatedMenuItem = new MenuItems(id,selectedRestaurantId, updatedName, updatedDescription, updatedPrice, "imageUrl","available");
 

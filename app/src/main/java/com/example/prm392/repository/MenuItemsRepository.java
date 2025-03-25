@@ -1,16 +1,10 @@
 package com.example.prm392.repository;
 
-<<<<<<< HEAD
-import android.content.Context;
-import android.os.AsyncTask;
-
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.prm392.DTO.MenuItemDTO;
-import com.example.prm392.Dao.MenuItemsDao;
-import com.example.prm392.database.AppDatabase;
-=======
->>>>>>> main
 import com.example.prm392.entity.MenuItems;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -22,30 +16,11 @@ import java.util.List;
 import java.util.UUID;
 
 public class MenuItemsRepository {
-<<<<<<< HEAD
-    private MenuItemsDao menuItemsDao;
-    private LiveData<List<MenuItems>> allMenuItems;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private LiveData<List<MenuItemDTO>> allMenuItemsWithRestaurant;
-    public MenuItemsRepository(Context context) {
-        AppDatabase db = AppDatabase.getInstance(context);
-        menuItemsDao = db.menuItemsDao();
-        allMenuItemsWithRestaurant = menuItemsDao.getAllMenuItemsWithRestaurant();
-    }
-
-    public LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant() {
-        return allMenuItemsWithRestaurant;
-    }
-
-    public LiveData<List<MenuItems>> getAllMenuItems() {
-        return allMenuItems;
-=======
     private DatabaseReference databaseReference;
 
     public MenuItemsRepository() {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app");
         databaseReference = database.getReference("menuItems");
->>>>>>> main
     }
 
     // Thêm món ăn vào Firebase
@@ -55,18 +30,6 @@ public class MenuItemsRepository {
         databaseReference.child(id).setValue(menuItem);
     }
 
-<<<<<<< HEAD
-    public void update(MenuItems menuItem) {
-        executorService.execute(() -> menuItemsDao.update(menuItem));
-    }
-
-    public void delete(MenuItems menuItem) {
-        executorService.execute(() -> menuItemsDao.delete(menuItem));
-    }
-
-    public void deleteMenuItemById(int id) {
-        executorService.execute(() -> menuItemsDao.deleteById(id));
-=======
     // Lấy danh sách món ăn theo restaurantId
     public void getMenuByRestaurant(int restaurantId, OnMenuLoadListener listener) {
         databaseReference.orderByChild("restaurantId").equalTo(restaurantId)
@@ -108,16 +71,138 @@ public class MenuItemsRepository {
         });
     }
 
-    // 🔹 Interface callback cho getMenuByRestaurant
+    public LiveData<List<MenuItems>> getAllMenuItems() {
+        MutableLiveData<List<MenuItems>> menuItemsLiveData = new MutableLiveData<>();
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<MenuItems> menuItemsList = new ArrayList<>();
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    MenuItems menuItem = itemSnapshot.getValue(MenuItems.class);
+                    menuItemsList.add(menuItem);
+                }
+                menuItemsLiveData.setValue(menuItemsList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                menuItemsLiveData.setValue(null);
+            }
+        });
+
+        return menuItemsLiveData;
+    }
+
+    // **Lấy danh sách menu items kèm thông tin restaurant**
+    public LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant() {
+        MutableLiveData<List<MenuItemDTO>> menuItemsLiveData = new MutableLiveData<>();
+        DatabaseReference restaurantRef = FirebaseDatabase.getInstance()
+                .getReference("restaurants");
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot menuSnapshot) {
+                List<MenuItemDTO> menuItemDTOList = new ArrayList<>();
+                for (DataSnapshot itemSnapshot : menuSnapshot.getChildren()) {
+                    MenuItems menuItem = itemSnapshot.getValue(MenuItems.class);
+
+                    if (menuItem != null) {
+                        String restaurantId = menuItem.getRestaurantId();
+                        restaurantRef.child(restaurantId)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot restaurantSnapshot) {
+                                        String restaurantName = restaurantSnapshot.child("email").getValue(String.class);
+                                        MenuItemDTO dto = new MenuItemDTO();
+                                        dto.id = menuItem.getId();
+                                        dto.menu_name = menuItem.getName();
+                                        dto.price = menuItem.getPrice();
+                                        dto.description = menuItem.getDescription();
+                                        dto.restaurant_name = restaurantName;
+                                        dto.uri = menuItem.getImageUrl();
+                                        dto.restaurant_id = menuItem.getRestaurantId();
+                                        menuItemDTOList.add(dto);
+                                        menuItemsLiveData.setValue(menuItemDTOList);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {}
+                                });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                menuItemsLiveData.setValue(null);
+            }
+        });
+
+        return menuItemsLiveData;
+    }
+
+    // **Cập nhật món ăn**
+    public void update(MenuItems menuItems) {
+        String id = menuItems.getId();
+        if (id != null) {
+            databaseReference.child(id).setValue(menuItems);
+        }
+    }
+
+    // **Xóa món ăn**
+    public void delete(MenuItems menuItems) {
+        String id = menuItems.getId();
+        if (id != null) {
+            databaseReference.child(id).removeValue();
+        }
+    }
+
+    // **Xóa món ăn theo ID**
+    public void deleteById(String id) {
+        databaseReference.child(id).removeValue();
+    }
     public interface OnMenuLoadListener {
         void onSuccess(List<MenuItems> menuList);
         void onFailure(String errorMessage);
+    }
+
+    public interface OnMenuItemsLoadedListener {
+        void onMenuItemsLoaded(List<MenuItemDTO> menuItems);
+    }
+
+
+    public void getAllMenuItemsWithRestaurant(OnMenuItemsLoadedListener listener) {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<MenuItemDTO> menuList = new ArrayList<>();
+                for (DataSnapshot menuSnapshot : snapshot.getChildren()) {
+                    MenuItems menuItem = menuSnapshot.getValue(MenuItems.class);
+                    if (menuItem != null) {
+                        MenuItemDTO dto = new MenuItemDTO();
+                        dto.id = menuItem.getId();
+                        dto.menu_name = menuItem.getName();
+                        dto.price = menuItem.getPrice();
+                        dto.description = menuItem.getDescription();
+                        dto.uri = menuItem.getImageUrl();
+                        dto.restaurant_id = menuItem.getRestaurantId();
+                        menuList.add(dto);
+                    }
+                }
+                listener.onMenuItemsLoaded(menuList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onMenuItemsLoaded(new ArrayList<>());
+            }
+        });
     }
 
     // 🔹 Interface callback cho findById
     public interface OnFindMenuItemListener {
         void onSuccess(MenuItems menuItem);
         void onFailure(String errorMessage);
->>>>>>> main
     }
 }

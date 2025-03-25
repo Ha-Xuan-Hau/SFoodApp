@@ -6,18 +6,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
 
 public class MenuItemsViewModelFactory implements ViewModelProvider.Factory {
-    private final Context context;
-
-    public MenuItemsViewModelFactory(Context context) {
-        this.context = context.getApplicationContext();
-    }
-
-    @NonNull
-    @Override
-    public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        if (modelClass.isAssignableFrom(MenuItemsViewModel.class)) {
-            return (T) new MenuItemsViewModel(context);
-        }
-        throw new IllegalArgumentException("Unknown ViewModel class");
-    }
+//    private final Context context;
+//
+//    public MenuItemsViewModelFactory(Context context) {
+//        this.context = context.getApplicationContext();
+//    }
+//
+//    @NonNull
+//    @Override
+//    public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+//        if (modelClass.isAssignableFrom(MenuItemsViewModel.class)) {
+//            return (T) new MenuItemsViewModel(context);
+//        }
+//        throw new IllegalArgumentException("Unknown ViewModel class");
+//    }
 }

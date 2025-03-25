@@ -1,6 +1,5 @@
 package com.example.prm392;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -25,7 +24,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
-import com.example.prm392.Adaptor.MenuItemsAdapter;
+import com.example.prm392.Adapter.MenuItemsAdapter;
 import com.example.prm392.DTO.MenuItemDTO;
 import com.example.prm392.entity.Restaurant;
 import com.example.prm392.viewmodel.MenuItemsViewModel;
@@ -57,13 +56,13 @@ public class MenuItemsActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MenuItemsAdapter(menuItemsList, menuItem -> {
-            menuItemsViewModel.deleteMenuItem(menuItem);
+            menuItemsViewModel.deleteMenuItem(menuItem.getId());
             Toast.makeText(this, "Đã xóa món: " + menuItem.getMenu_name(), Toast.LENGTH_SHORT).show();
         });
         recyclerView.setAdapter(adapter);
 
-        menuItemsViewModel = new ViewModelProvider(this, new MenuItemsViewModelFactory(this))
-                .get(MenuItemsViewModel.class);
+        menuItemsViewModel = new ViewModelProvider(this).get(MenuItemsViewModel.class);
+
 
         menuItemsViewModel.getAllMenuItemsWithRestaurant().observe(this, menuItems -> {
             originalMenuItemsList.clear();
@@ -191,7 +190,7 @@ public class MenuItemsActivity extends AppCompatActivity {
                         return;
                     }
 
-                    int restaurantId = restaurantList.get(selectedIndex).getId(); 
+                    String restaurantId = restaurantList.get(selectedIndex).getId();
 
                     MenuItems newItem = new MenuItems(restaurantId, name, description, price, imageUrl,"available");
                     menuItemsViewModel.insert(newItem);
