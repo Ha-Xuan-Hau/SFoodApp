@@ -33,6 +33,14 @@ android {
 
 dependencies {
     implementation ("androidx.room:room-runtime:2.6.1")
+    implementation ("com.makeramen:roundedimageview:2.3.0")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation ("com.google.firebase:firebase-auth:22.3.1")
+    implementation ("com.google.firebase:firebase-database:20.3.0")
+    implementation ("com.google.firebase:firebase-storage:20.3.0")
+
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
     annotationProcessor ("androidx.room:room-compiler:2.6.1")
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -41,4 +49,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }
