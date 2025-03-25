@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.UUID;
@@ -20,9 +21,7 @@ public class CustomerUserRepository {
 
     // Thêm khách hàng mới vào Firebase
     public void insert(CustomerUser customerUser) {
-        String id = UUID.randomUUID().toString(); // Tạo ID ngẫu nhiên
-        customerUser.setCustomerId(id);
-        databaseReference.child(id).setValue(customerUser);
+        databaseReference.child(customerUser.getCustomerId()).setValue(customerUser);
     }
 
     // Đăng nhập bằng email và mật khẩu
@@ -52,11 +51,12 @@ public class CustomerUserRepository {
 
     // Lấy khách hàng theo ID
     public void findById(String id, OnFindUserListener listener) {
-        databaseReference.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+        Query query = databaseReference.orderByChild("customerId").equalTo(id);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    CustomerUser user = dataSnapshot.getValue(CustomerUser.class);
+                    CustomerUser user = dataSnapshot.getChildren().iterator().next().getValue(CustomerUser.class);
                     listener.onSuccess(user);
                 } else {
                     listener.onFailure("Không tìm thấy người dùng");

@@ -23,11 +23,7 @@ public class RestaurantRepository {
 
     // Thêm nhà hàng vào Firebase
     public void insert(Restaurant restaurant, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        DatabaseReference restaurantRef = firebaseDatabase.push();
-        restaurant.setId(restaurantRef.getKey()); // Chuyển hash thành số dương
-        restaurantRef.setValue(restaurant)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+        firebaseDatabase.child(restaurant.getId()).setValue(restaurant);
     }
 
     // Lấy tất cả nhà hàng

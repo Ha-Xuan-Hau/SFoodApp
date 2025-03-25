@@ -1,22 +1,19 @@
 package com.example.prm392;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.prm392.entity.CustomerUser;
 import com.example.prm392.entity.MenuItems;
 import com.example.prm392.entity.OrderDetail;
 import com.example.prm392.entity.OrderShip;
-import com.example.prm392.entity.ShipperEvaluation;
 import com.example.prm392.repository.CustomerUserRepository;
 import com.example.prm392.repository.MenuItemsRepository;
 import com.example.prm392.repository.OrderDetailRepository;
@@ -33,9 +30,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class OrderDetailActivity extends AppCompatActivity {
-    private TextView fullName, phone, address, productName, description, quantity, price, quantityPrice, totalPrice, orderShipId, createdAt, completedAt,reviewTextView;
+    private TextView fullName, phone, address, productName, description, quantity, price, quantityPrice, totalPrice, orderShipId, createdAt, completedAt, reviewTextView;
     private Button btnCompleteOrder, btnAcceptOrder;
     private CustomerUserRepository customerUserRepository;
     private MenuItemsRepository menuItemsRepository;
@@ -52,6 +51,7 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         String orderId = getIntent().getStringExtra("ORDER_ID");
 
+        // Initialize views
         fullName = findViewById(R.id.full_name);
         phone = findViewById(R.id.phone);
         address = findViewById(R.id.address);
@@ -68,222 +68,200 @@ public class OrderDetailActivity extends AppCompatActivity {
         btnAcceptOrder = findViewById(R.id.btnAcceptOrder);
         reviewTextView = findViewById(R.id.reviewTextView);
 
+        // Initialize repositories
+        customerUserRepository = new CustomerUserRepository();
+        menuItemsRepository = new MenuItemsRepository();
+        orderDetailRepository = new OrderDetailRepository();
+        orderShipRepository = new OrderShipRepository();
+        shipperEvaluationRepository = new ShipperEvaluationRepository();
 
-        new Thread(() -> {
-            customerUserRepository = new CustomerUserRepository();
-            menuItemsRepository = new MenuItemsRepository();
-            orderDetailRepository = new OrderDetailRepository();
-            orderShipRepository = new OrderShipRepository();
-            shipperEvaluationRepository = new ShipperEvaluationRepository();
+        loadOrderData(orderId);
+    }
 
-            CountDownLatch latch = new CountDownLatch(4); // Chờ 4 dữ liệu: orderShip, customerUser, orderDetail, menuItems
+    private void loadOrderData( String orderId) {
+        // Using ExecutorService for background thread handling
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-            final OrderShip[] orderShip = {null};
-            final CustomerUser[] customerUser = {null};
-            final OrderDetail[] orderDetail = {null};
-            final MenuItems[] menuItems = {null};
-            final ShipperEvaluation[] evaluation = {null};
-
-            // 1. Lấy OrderShip
-            orderShipRepository.findById(orderId, new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        orderShip[0] = snapshot.getValue(OrderShip.class);
-                    }
-                    latch.countDown();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    latch.countDown();
-                }
-            });
-
-            try {
-                latch.await(); // Đợi OrderShip tải xong
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (orderShip[0] == null) {
-                runOnUiThread(() -> Toast.makeText(OrderDetailActivity.this, "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show());
-                return;
-            }
-
-            // 2. Lấy CustomerUser
-            DatabaseReference customerRef = FirebaseDatabase.getInstance()
-                    .getReference("CustomerUsers")
-                    .child(String.valueOf(orderShip[0].getCustomerId()));
-
-            customerRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        customerUser[0] = snapshot.getValue(CustomerUser.class);
-                    }
-                    latch.countDown();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    latch.countDown();
-                }
-            });
-
-            // 3. Lấy OrderDetail
-            orderDetailRepository.findById(orderShip[0].getOrderDetailId(), new OrderDetailRepository.OnFindOrderDetailListener() {
-                @Override
-                public void onSuccess(OrderDetail result) {
-                    orderDetail[0] = result;
-                    latch.countDown();
-                }
-
-                @Override
-                public void onFailure(String errorMessage) {
-                    latch.countDown();
-                }
-            });
-
-            // 4. Lấy MenuItems
-            menuItemsRepository.findById(orderDetail[0].getMenuItemsId(), new MenuItemsRepository.OnFindMenuItemListener() {
-                @Override
-                public void onSuccess(MenuItems result) {
-                    menuItems[0] = result;
-                    latch.countDown();
-                }
-
-                @Override
-                public void onFailure(String errorMessage) {
-                    latch.countDown();
-                }
-            });
-
-            // 3. Chờ dữ liệu từ MenuItems tải xong
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            // 4. Kiểm tra evaluation[0] trước khi gọi getEvaluationByOrder
-            if (evaluation[0] != null) {
-                shipperEvaluationRepository.getEvaluationByOrder(evaluation[0].getId(), new ShipperEvaluationRepository.OnFindEvaluationListener() {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                // Perform Firebase query here
+                orderShipRepository.findById(orderId, new OrderShipRepository.OnFindOrderShipListener() {
                     @Override
-                    public void onSuccess(ShipperEvaluation result) {
-                        evaluation[0] = result;
-                        runOnUiThread(() -> updateUI(orderShip[0], customerUser[0], orderDetail[0], menuItems[0], evaluation[0]));
+                    public void onSuccess(final OrderShip orderShip) {
+                        // Ensure orderShip is not null before accessing its properties
+                        if (orderShip != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateUIOrderShip(orderShip);
+                                }
+                            });
+                            loadCustomerUser(orderShip.getCustomerId());
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(OrderDetailActivity.this, "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                     }
 
                     @Override
                     public void onFailure(String errorMessage) {
-                        runOnUiThread(() -> updateUI(orderShip[0], customerUser[0], orderDetail[0], menuItems[0], null));
+                        // Handle failure
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(OrderDetailActivity.this, "Lỗi khi tải đơn hàng: " + errorMessage, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 });
-            } else {
-                // Nếu evaluation chưa có, cập nhật UI ngay với giá trị null
-                runOnUiThread(() -> updateUI(orderShip[0], customerUser[0], orderDetail[0], menuItems[0], null));
+
             }
-        }).start();
-
-// Phương thức cập nhật UI
-
-        // Xử lý khi bấm vào nút Hoàn thành
-        btnCompleteOrder.setOnClickListener(v -> new Thread(() -> {
-            if (orderShip != null) {
-                long completedAtTime = System.currentTimeMillis(); // Lấy thời gian hoàn thành
-                orderShipRepository.completeOrder(orderShip.getOrderShipId(), completedAtTime,
-                        new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(OrderDetailActivity.this, "Đơn hàng đã hoàn thành!", Toast.LENGTH_SHORT).show();
-                                });
-                            }
-                        },
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(OrderDetailActivity.this, "Lỗi khi cập nhật đơn hàng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                            }
-                        }
-                );
-
-
-                runOnUiThread(() -> {
-                    btnCompleteOrder.setVisibility(View.GONE); // Ẩn nút sau khi hoàn thành
-                    completedAt.setText("Thời gian hoàn thành: " + new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(completedAtTime));
-                    Toast.makeText(OrderDetailActivity.this, "Đơn hàng đã hoàn thành!", Toast.LENGTH_SHORT).show();
-                });
-            }
-        }).start());
-
-        // Xử lý khi bấm vào nút Nhận đơn
-        btnAcceptOrder.setOnClickListener(v -> new Thread(() -> {
-            if (orderShip != null) {
-                int shipperId = getCurrentShipperId(); // Lấy ID của shipper hiện tại
-                orderShipRepository.acceptOrder(orderShip.getOrderShipId(), shipperId,
-                        new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(OrderDetailActivity.this, "Shipper đã nhận đơn hàng!", Toast.LENGTH_SHORT).show();
-                                });
-                            }
-                        },
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(OrderDetailActivity.this, "Lỗi khi cập nhật shipper: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                            }
-                        }
-                );
-
-
-                runOnUiThread(() -> {
-                    btnAcceptOrder.setVisibility(View.GONE); // Ẩn nút sau khi nhận đơn
-                    Toast.makeText(OrderDetailActivity.this, "Nhận đơn thành công!", Toast.LENGTH_SHORT).show();
-                });
-            }
-        }).start());
-
-        ImageView btnBack = findViewById(R.id.btnBack1);
-        btnBack.setOnClickListener(v -> finish());
+        });
     }
 
-    // Hàm giả định lấy shipperId của shipper hiện tại (bạn cần thay thế bằng cách lấy ID thực tế từ tài khoản shipper đang đăng nhập)
-    private int getCurrentShipperId() {
-        return 1; // Giả sử ID shipper hiện tại là 1, thay bằng cách lấy từ SharedPreferences hoặc database
+
+
+    private void loadCustomerUser(final String customerId) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                customerUserRepository.findById(customerId, new CustomerUserRepository.OnFindUserListener() {
+                    @Override
+                    public void onSuccess(final CustomerUser user) {
+                        // Run UI update on the main thread
+                        if (orderShip != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateUICustomerUser(user);
+
+                                }
+                            });
+                            loadOrderDetail(orderShip.getOrderDetailId());
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(OrderDetailActivity.this, "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(final String errorMessage) {
+                        // Run error handling on the main thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Show failure message on UI thread
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
-    private void updateUI(OrderShip orderShip, CustomerUser customerUser, OrderDetail orderDetail, MenuItems menuItems, ShipperEvaluation evaluation) {
-        if (customerUser != null) {
-            fullName.setText(customerUser.getFullName());
-            phone.setText(customerUser.getPhone());
-            address.setText(customerUser.getAddress());
-        }
 
-        if (menuItems != null) {
-            productName.setText(menuItems.getName());
-            description.setText(menuItems.getDescription());
-            price.setText("đ" + menuItems.getPrice());
-        }
+    private void loadOrderDetail(final String orderDetailId) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                orderDetailRepository.findById(orderDetailId, new OrderDetailRepository.OnFindOrderDetailListener() {
+                    @Override
+                    public void onSuccess(final OrderDetail result) {
+                        // Run UI update on the main thread
+                        if (orderShip != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateUIOrderDetail(result);
 
-        if (orderDetail != null) {
-            quantity.setText("x" + orderDetail.getQuantity());
-            quantityPrice.setText("Tổng tiền hàng: ₫" + orderDetail.getPrice());
-            totalPrice.setText("Thành tiền: ₫" + (orderDetail.getPrice() + 16050));
-        }
+                                }
+                            });
+                            loadMenuItems(result.getMenuItemsId());
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(OrderDetailActivity.this, "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(final String errorMessage) {
+                        // Run error handling on the main thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(OrderDetailActivity.this, "Lỗi khi tải chi tiết đơn hàng!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    private void loadMenuItems(final String menuItemId) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                menuItemsRepository.findById(menuItemId, new MenuItemsRepository.OnFindMenuItemListener() {
+                    @Override
+                    public void onSuccess(final MenuItems result) {
+                        // Run UI update on the main thread
+                        if (orderShip != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateUIMenuItems(result);
+                                }
+                            });
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(OrderDetailActivity.this, "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(final String errorMessage) {
+                        // Run error handling on the main thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(OrderDetailActivity.this, "Lỗi khi tải sản phẩm!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+
+    // Update UI methods
+    private void updateUIOrderShip(OrderShip orderShip) {
         if (orderShip != null) {
             orderShipId.setText("Mã đơn hàng: " + orderShip.getOrderShipId());
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             createdAt.setText("Thời gian đặt hàng: " + dateFormat.format(orderShip.getCreatedAt()));
 
-            if (!orderShip.getShipperId().isEmpty() ) {
+            if (!orderShip.getShipperId().isEmpty()) {
                 if ("Đang giao".equals(orderShip.getOrderStatus())) {
                     btnCompleteOrder.setVisibility(View.VISIBLE);
                 } else {
@@ -294,12 +272,81 @@ public class OrderDetailActivity extends AppCompatActivity {
                 btnAcceptOrder.setVisibility(View.VISIBLE);
             }
         }
+    }
 
-        if (evaluation != null) {
-            reviewTextView.setText("⭐ " + evaluation.getStarRate() + " sao\n" + evaluation.getReview());
-            reviewTextView.setVisibility(View.VISIBLE);
-        } else {
-            reviewTextView.setVisibility(View.GONE);
+    private void updateUICustomerUser(CustomerUser customerUser) {
+        if (customerUser != null) {
+            fullName.setText(customerUser.getFullName());
+            phone.setText(customerUser.getPhone());
+            address.setText(customerUser.getAddress());
         }
     }
+
+    private void updateUIOrderDetail(OrderDetail orderDetail) {
+        if (orderDetail != null) {
+            quantity.setText("x" + orderDetail.getQuantity());
+            quantityPrice.setText("Tổng tiền hàng: ₫" + orderDetail.getPrice());
+            totalPrice.setText("Thành tiền: ₫" + (orderDetail.getPrice() + 16050)); // Include any extra charges
+        }
+    }
+
+    private void updateUIMenuItems(MenuItems menuItems) {
+        if (menuItems != null) {
+            productName.setText(menuItems.getName());
+            description.setText(menuItems.getDescription());
+            price.setText("đ" + menuItems.getPrice());
+        }
+    }
+
+
+    // Handle button clicks
+//    private void setupButtons() {
+//        btnCompleteOrder.setOnClickListener(v -> completeOrder());
+//        btnAcceptOrder.setOnClickListener(v -> acceptOrder());
+//    }
+
+//    private void completeOrder() {
+//        if (orderShip != null) {
+//            long completedAtTime = System.currentTimeMillis();
+//            orderShipRepository.completeOrder(orderShip.getOrderShipId(), completedAtTime,
+//                    new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void unused) {
+//                            Toast.makeText(OrderDetailActivity.this, "Đơn hàng đã hoàn thành!", Toast.LENGTH_SHORT).show();
+//                            btnCompleteOrder.setVisibility(View.GONE);
+//                            completedAt.setText("Thời gian hoàn thành: " + new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(completedAtTime));
+//                        }
+//                    },
+//                    new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Toast.makeText(OrderDetailActivity.this, "Lỗi khi cập nhật đơn hàng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//            );
+//        }
+//    }
+
+//    private void acceptOrder() {
+//        if (orderShip != null) {
+//            String shipperId = "1";
+//            orderShipRepository.acceptOrder(orderShip.getOrderShipId(), shipperId,
+//                    new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void unused) {
+//                            Toast.makeText(OrderDetailActivity.this, "Shipper đã nhận đơn hàng!", Toast.LENGTH_SHORT).show();
+//                            btnAcceptOrder.setVisibility(View.GONE);
+//                        }
+//                    },
+//                    new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Toast.makeText(OrderDetailActivity.this, "Lỗi khi cập nhật shipper: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//            );
+//        }
+//    }
+
 }
+
