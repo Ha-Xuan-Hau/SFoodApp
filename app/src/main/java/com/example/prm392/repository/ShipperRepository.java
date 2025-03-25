@@ -14,11 +14,8 @@ public class ShipperRepository {
     }
 
     // 🔹 Thêm shipper vào Firebase
-    public void insertShipper(Shipper shipper, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        String shipperId = String.valueOf(shipper.getShipperId());
-        shipperRef.child(shipperId).setValue(shipper)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+    public void insertShipper(Shipper shipper) {
+        shipperRef.child(shipper.getShipperId()).setValue(shipper);
     }
 
     // 🔹 Lấy thông tin shipper theo ID

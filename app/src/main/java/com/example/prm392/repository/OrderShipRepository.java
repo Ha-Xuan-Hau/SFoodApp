@@ -1,5 +1,9 @@
 package com.example.prm392.repository;
 
+import android.util.Log;
+import android.widget.Toast;
+
+import com.example.prm392.ShipperActivity;
 import com.example.prm392.entity.OrderDetail;
 import com.example.prm392.entity.OrderShip;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -15,72 +19,121 @@ public class OrderShipRepository {
     public OrderShipRepository() {
         firebaseDatabase = FirebaseDatabase.getInstance(
                 "https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app"
-        ).getReference("ShipperEvaluations");
+        ).getReference("OrderShip");
 
     }
 
     // Thêm đơn hàng vào Firebase
-    public void insert(OrderShip orderShip, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        DatabaseReference orderRef = firebaseDatabase.push();
-        orderShip.setOrderShipId(orderRef.getKey()); // Chuyển hash về số dương
-        orderRef.setValue(orderShip)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+    public void insert(OrderShip orderShip) {
+        firebaseDatabase.child(orderShip.getOrderShipId()).setValue(orderShip);
     }
 
     // Lấy danh sách đơn hàng theo Customer ID
-    public void getOrdersByCustomer(int customerId, ValueEventListener listener) {
-        firebaseDatabase.orderByChild("customerId").equalTo(customerId)
-                .addListenerForSingleValueEvent(listener);
-    }
 
-    // Lấy danh sách đơn hàng theo Shipper ID và danh sách trạng thái
-    public void getOrdersByShipper(Integer shipperId, List<String> statusList, ValueEventListener listener) {
-        Query query = (shipperId == null)
-                ? firebaseDatabase
-                : firebaseDatabase.orderByChild("shipperId").equalTo(shipperId);
+    public void findById(String orderShipId, final OnFindOrderShipListener listener) {
+        Query query = firebaseDatabase.child("OrderShip").orderByChild("orderShipId").equalTo(orderShipId);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                List<OrderShip> result = new ArrayList<>();
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    OrderShip order = data.getValue(OrderShip.class);
-                    if (order != null && statusList.contains(order.getOrderStatus())) {
-                        result.add(order);
+                Log.d("FirebaseData", "Snapshot exists: " + snapshot.exists());
+                if (snapshot.exists()) {
+                    // Duyệt qua tất cả các children để kiểm tra đơn hàng
+                    for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
+                        OrderShip orderShip = orderSnapshot.getValue(OrderShip.class);
+                        Log.d("FirebaseData", "OrderShip found: " + orderShip);
+                        if (orderShip != null) {
+                            listener.onSuccess(orderShip);
+                            return;
+                        }
                     }
+                    listener.onFailure("Không tìm thấy đơn hàng hợp lệ");
+                } else {
+                    listener.onFailure("Không tìm thấy đơn hàng với orderId: " + orderShipId);
                 }
-                listener.onDataChange(snapshot); // Trả kết quả về UI
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                listener.onCancelled(error);
+                listener.onFailure("Lỗi khi kết nối Firebase: " + error.getMessage());
             }
         });
     }
 
-    // Tìm đơn hàng theo ID
-    public void findById(String orderId, ValueEventListener listener) {
-        firebaseDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+
+    // Interface OnOrdersLoadedListener
+    public interface OnOrdersLoadedListener {
+        void onSuccess(List<OrderShip> orderShipList);  // Phương thức này sẽ được gọi khi tải dữ liệu thành công
+        void onFailure(String message);  // Phương thức này sẽ được gọi khi có lỗi xảy ra
+    }
+
+
+    // Hàm getOrdersByShipper
+    public void loadOrdersByShipperId(String shipperId, final OnOrdersLoadedListener listener) {
+        if (shipperId == null || shipperId.isEmpty()) {
+            listener.onFailure("Không tìm thấy shipperId!");
+            return;
+        }
+
+        Query query = firebaseDatabase.orderByChild("shipperId").equalTo(shipperId);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                List<OrderShip> orderShipList = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     OrderShip order = data.getValue(OrderShip.class);
-                    if (order != null && order.getOrderShipId().equals(orderId)) {
-                        listener.onDataChange(data);
-                        return;
+                    if (order != null) {
+                        orderShipList.add(order);  // Thêm đơn hàng vào danh sách
                     }
                 }
-                listener.onDataChange(null); // Không tìm thấy
+                // Trả kết quả về UI
+                if (!orderShipList.isEmpty()) {
+                    listener.onSuccess(orderShipList);
+                } else {
+                    listener.onFailure("Không có đơn hàng nào cho shipper");
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                listener.onCancelled(error);
+                listener.onFailure("Lỗi khi tải dữ liệu: " + error.getMessage());
             }
         });
     }
+
+    // Hàm tải các đơn hàng chưa có shipperId (đơn hàng cần chấp nhận)
+    public void loadOrdersNeedAccept(final OnOrdersLoadedListener listener) {
+        Query query = firebaseDatabase.orderByChild("shipperId").equalTo("");  // Tìm các đơn hàng chưa có shipperId
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                List<OrderShip> orderShipList = new ArrayList<>();
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    OrderShip order = data.getValue(OrderShip.class);
+                    if (order != null) {
+                        orderShipList.add(order);  // Thêm đơn hàng vào danh sách
+                    }
+                }
+                // Trả kết quả về UI
+                if (!orderShipList.isEmpty()) {
+                    listener.onSuccess(orderShipList);
+                } else {
+                    listener.onFailure("Không có đơn hàng cần chấp nhận!");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                listener.onFailure("Lỗi khi tải dữ liệu: " + error.getMessage());
+            }
+        });
+    }
+
+
 
     // Cập nhật trạng thái đơn hàng thành "Hoàn thành"
     public void completeOrder(String orderId, long completedAt, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
@@ -93,7 +146,7 @@ public class OrderShipRepository {
     }
 
     // Shipper nhận đơn hàng
-    public void acceptOrder(String orderId, int shipperId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+    public void acceptOrder(String orderId, String shipperId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         firebaseDatabase.child(String.valueOf(orderId))
                 .child("shipperId").setValue(shipperId)
                 .addOnSuccessListener(onSuccess)

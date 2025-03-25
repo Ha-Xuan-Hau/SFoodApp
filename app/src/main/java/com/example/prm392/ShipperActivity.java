@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class ShipperActivity extends AppCompatActivity {
+public class ShipperActivity extends AppCompatActivity implements OrderShipRepository.OnOrdersLoadedListener{
 
     private DrawerLayout drawerLayout;
     private NavigationView navUseCase, navAccount;
@@ -112,7 +112,7 @@ public class ShipperActivity extends AppCompatActivity {
             }
         });
 
-        DatabaseReference shipperRef = FirebaseDatabase.getInstance()
+        DatabaseReference shipperRef = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Shippers")
                 .child(String.valueOf(shipperId));
 
@@ -152,27 +152,54 @@ public class ShipperActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int itemId = item.getItemId();
 
+                // Xử lý khi người dùng chọn "Trang chủ"
                 if (itemId == R.id.nav_home) {
                     Toast.makeText(ShipperActivity.this, "Trang chủ", Toast.LENGTH_SHORT).show();
+
+                    // Xử lý khi người dùng chọn "Đơn hàng của bạn"
                 } else if (itemId == R.id.nav_your_ordership) {
                     Toast.makeText(ShipperActivity.this, "Đơn hàng của bạn", Toast.LENGTH_SHORT).show();
-                    List<String> statusList = Arrays.asList("Đang giao", "Đã hủy");
+                    // Trạng thái đơn hàng của shipper: "Đang giao", "Đã hủy"
+                    String statusList = "Đang giao";
+                    // Gọi loadOrders với shipperId và statusList
                     loadOrders(shipperId, statusList);
-                }else if (itemId == R.id.nav_accept_ordership) {
+
+                    // Xử lý khi người dùng chọn "Chờ xác nhận"
+                } else if (itemId == R.id.nav_accept_ordership) {
                     Toast.makeText(ShipperActivity.this, "Chờ xác nhận", Toast.LENGTH_SHORT).show();
-                    Integer shipperId = null;  // Hoặc lấy từ nguồn dữ liệu nào đó
+                    // Trạng thái đơn hàng "Đang giao"
                     List<String> statusList = Arrays.asList("Đang giao");
-                    loadOrders(shipperId, statusList);
-                }else if (itemId == R.id.nav_evaluator) {
+                    // Gọi loadOrders với shipperId và statusList
+                    orderShipRepository.loadOrdersNeedAccept(new OrderShipRepository.OnOrdersLoadedListener() {
+                        @Override
+                        public void onSuccess(List<OrderShip> orderShipList) {
+                            OrderAdapter orderAdapter = new OrderAdapter(orderShipList, ShipperActivity.this);
+                            RecyclerView recyclerView = findViewById(R.id.recyclerViewOrders);  // Thay R.id.recyclerView bằng id thực tế của RecyclerView trong layout của bạn
+                            recyclerView.setLayoutManager(new LinearLayoutManager(ShipperActivity.this));  // Đảm bảo set LayoutManager cho RecyclerView
+                            recyclerView.setAdapter(orderAdapter);  // Đặt adapter cho RecyclerView
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+
+                        }
+                    });
+
+                    // Xử lý khi người dùng chọn "Đánh giá"
+                } else if (itemId == R.id.nav_evaluator) {
                     Toast.makeText(ShipperActivity.this, "Đánh giá", Toast.LENGTH_SHORT).show();
-                    List<String> statusList = Arrays.asList("Hoàn thành");
+                    // Trạng thái đơn hàng "Hoàn thành"
+                    String statusList = "Hoàn thành";
+                    // Gọi loadOrders với shipperId và statusList
                     loadOrders(shipperId, statusList);
                 }
 
+                // Đóng thanh navigation drawer
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             }
         });
+
 
 
         // Xử lý sự kiện chọn menu Account
@@ -198,7 +225,6 @@ public class ShipperActivity extends AppCompatActivity {
                     public void onDataChange(DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             Shipper shipper = snapshot.getValue(Shipper.class);
-                            Log.d("FirebaseData", "Dữ liệu shipper: " + shipper.toString());
                             if (shipper != null) {
                                 intent1.putExtra("shipperId", shipper.getShipperId());
                                 intent1.putExtra("fullName", shipper.getFullName());
@@ -234,36 +260,50 @@ public class ShipperActivity extends AppCompatActivity {
 
         orderShipRepository = new OrderShipRepository();
 
-        List<String> statusList = Arrays.asList("Đang giao", "Đã hủy","Hoàn thành");
+        String statusList = "Đang giao";
         loadOrders(shipperId,statusList);
 
 
     }
-    private void loadOrders(Integer shipperId, List<String> statusList) {
+    private void loadOrders(Integer shipperId, String statusList) {
         if (shipperId == null) {
             Toast.makeText(ShipperActivity.this, "Không tìm thấy shipperId!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        orderShipRepository.getOrdersByShipper(shipperId, statusList, new ValueEventListener() {
+        // Gọi hàm getOrdersByShipper và truyền 'this' làm listener
+        orderShipRepository.loadOrdersByShipperId("" + shipperId, new OrderShipRepository.OnOrdersLoadedListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                List<OrderShip> orderShipList = new ArrayList<>();
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    OrderShip order = data.getValue(OrderShip.class);
-                    if (order != null) {
-                        orderShipList.add(order);
+            public void onSuccess(List<OrderShip> orderShipList) {
+                for(OrderShip o:orderShipList){
+                    if(o.getOrderStatus().equals(statusList)){
+                        OrderAdapter orderAdapter = new OrderAdapter(orderShipList, ShipperActivity.this);
+                        RecyclerView recyclerView = findViewById(R.id.recyclerViewOrders);  // Thay R.id.recyclerView bằng id thực tế của RecyclerView trong layout của bạn
+                        recyclerView.setLayoutManager(new LinearLayoutManager(ShipperActivity.this));  // Đảm bảo set LayoutManager cho RecyclerView
+                        recyclerView.setAdapter(orderAdapter);  // Đặt adapter cho RecyclerView
                     }
                 }
+                // Tạo adapter và gán vào RecyclerView
+
             }
+
             @Override
-            public void onCancelled(DatabaseError error) {
-                Log.e("Firebase", "Lỗi tải dữ liệu: " + error.getMessage());
-                Toast.makeText(ShipperActivity.this, "Không thể tải đơn hàng!", Toast.LENGTH_SHORT).show();
+            public void onFailure(String message) {
+                // Xử lý khi có lỗi
+                Toast.makeText(ShipperActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
 
+    @Override
+    public void onSuccess(List<OrderShip> orderShipList) {
 
+    }
+
+    @Override
+    public void onFailure(String message) {
+
+    }
 }
