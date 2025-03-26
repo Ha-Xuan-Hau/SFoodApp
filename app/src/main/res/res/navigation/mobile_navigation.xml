@@ -7,34 +7,34 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.online_shop.fragment.home.HomeFragment"
+        android:name="com.example.prm392.fragment.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_profile"
-        android:name="com.example.online_shop.fragment.profile.ProfileFragment"
+        android:name="com.example.prm392.fragment.profile.ProfileFragment"
         android:label="@string/profile"
         tools:layout="@layout/fragment_profile" />
 
     <fragment
         android:id="@+id/nav_category"
-        android:name="com.example.online_shop.fragment.category.CategoryFragment"
+        android:name="com.example.prm392.fragment.category.CategoryFragment"
         android:label="@string/category"
         tools:layout="@layout/fragment_category" />
     <fragment
         android:id="@+id/nav_new_products"
-        android:name="com.example.online_shop.fragment.product.NewProductsFragment"
+        android:name="com.example.prm392.fragment.product.NewProductsFragment"
         android:label="@string/new_products"
         tools:layout="@layout/fragment_new_products" />
     <fragment
         android:id="@+id/nav_my_orders"
-        android:name="com.example.online_shop.fragment.order.MyOrdersFragment"
+        android:name="com.example.prm392.fragment.order.MyOrdersFragment"
         android:label="@string/my_orders"
         tools:layout="@layout/fragment_my_orders" />
     <fragment
         android:id="@+id/nav_my_carts"
-        android:name="com.example.online_shop.fragment.cart.MyCartsFragment"
+        android:name="com.example.prm392.fragment.cart.MyCartsFragment"
         android:label="@string/my_carts"
         tools:layout="@layout/fragment_my_carts" />
 </navigation>
