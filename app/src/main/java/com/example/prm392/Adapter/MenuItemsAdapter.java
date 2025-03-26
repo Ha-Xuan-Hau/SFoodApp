@@ -104,7 +104,6 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
             super(itemView);
             name = itemView.findViewById(com.example.prm392.R.id.item_name);
             price = itemView.findViewById(R.id.item_price);
-            restaurant = itemView.findViewById(R.id.txt_restaurant);
             btnDelete = itemView.findViewById(R.id.btn_delete);
             imageView = itemView.findViewById(R.id.item_image);
         }

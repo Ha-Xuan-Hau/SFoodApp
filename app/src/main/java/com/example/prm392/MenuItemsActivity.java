@@ -1,10 +1,13 @@
 package com.example.prm392;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -30,9 +36,15 @@ import com.example.prm392.entity.Restaurant;
 import com.example.prm392.viewmodel.MenuItemsViewModel;
 import com.example.prm392.viewmodel.MenuItemsViewModelFactory;
 import com.example.prm392.entity.MenuItems;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MenuItemsActivity extends AppCompatActivity {
     private MenuItemsViewModel menuItemsViewModel;
@@ -42,12 +54,34 @@ public class MenuItemsActivity extends AppCompatActivity {
     private SearchView searchView;
     private Spinner spinnerFilterPrice;
     private List<MenuItemDTO> originalMenuItemsList = new ArrayList<>();
-    private Uri selectedImageUri;;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_items);
+        ImageButton btnOpenNav = findViewById(R.id.btn_open_nav);
+        Intent intent = getIntent();
+        String restaurantId = "1";
+        btnOpenNav.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenu().add("Quản lý thông tin nhà hàng").setOnMenuItemClickListener(item -> {
+                Intent intent2 = new Intent(this, UpdateRestaurantActivity.class);
+                intent2.putExtra("restaurantId", restaurantId);
+                startActivity(intent2);
+                return true;
+            });
+
+            popupMenu.getMenu().add("Quản lý thực đơn").setOnMenuItemClickListener(item -> {
+                Intent intent2 = new Intent(this, MenuItemsActivity.class);
+                intent2.putExtra("restaurantId", restaurantId);
+                startActivity(intent2);
+                return true;
+            });
+
+            popupMenu.show();
+        });
+
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view_menu_items);
         Button btnAdd = findViewById(R.id.btn_add_menu_item);
@@ -61,8 +95,9 @@ public class MenuItemsActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(adapter);
 
-        menuItemsViewModel = new ViewModelProvider(this).get(MenuItemsViewModel.class);
+        menuItemsViewModel = new ViewModelProvider (this).get(MenuItemsViewModel.class);
 
+        menuItemsViewModel.fetchMenuItemsByRestaurant(restaurantId); // Gọi phương thức lấy dữ liệu theo restaurantId
 
         menuItemsViewModel.getAllMenuItemsWithRestaurant().observe(this, menuItems -> {
             originalMenuItemsList.clear();
@@ -73,11 +108,13 @@ public class MenuItemsActivity extends AppCompatActivity {
         });
 
         btnAdd.setOnClickListener(v -> {
-            showAddMenuItemDialog();
+            showAddMenuItemDialog(restaurantId);
         });
         setupSearchView();
         setupPriceFilter();
     }
+
+
 
     private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -135,8 +172,9 @@ public class MenuItemsActivity extends AppCompatActivity {
     }
 
 
+    private Uri selectedImageUri;
 
-    private void showAddMenuItemDialog() {
+    private void showAddMenuItemDialog(String restautantId) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_add_menu_item, null);
@@ -145,55 +183,52 @@ public class MenuItemsActivity extends AppCompatActivity {
         EditText edtName = dialogView.findViewById(R.id.edtName);
         EditText edtDescription = dialogView.findViewById(R.id.edtDescription);
         EditText edtPrice = dialogView.findViewById(R.id.edtPrice);
-        EditText edtImageUrl = dialogView.findViewById(R.id.edtImageUrl);
-        Spinner selectRestaurant = dialogView.findViewById(R.id.select_restaurant);
 
-        edtImageUrl.setFocusable(false);
-        edtImageUrl.setOnClickListener(v -> openImagePicker());
-        if (selectedImageUri != null) {
-            edtImageUrl.setText(selectedImageUri.toString());
-        }
-        List<Restaurant> restaurantList = new ArrayList<>();
-        List<String> restaurantNames = new ArrayList<>();
+        Button btnSelectImage = dialogView.findViewById(R.id.btn_select_image);
+        ImageView imgPhoto = dialogView.findViewById(R.id.img_photo);
 
-        menuItemsViewModel.getAllRestaurants().observe(this, restaurants -> {
-            restaurantList.clear();
-            restaurantList.addAll(restaurants);
-            restaurantNames.clear();
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
 
-            for (Restaurant restaurant : restaurants) {
-                restaurantNames.add(restaurant.getName());
-            }
+        Uri selectedImageUri = null;
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_spinner_dropdown_item, restaurantNames);
-            selectRestaurant.setAdapter(adapter);
+        btnSelectImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, 100);
         });
+
 
         builder.setTitle("Thêm Món Mới")
                 .setPositiveButton("Thêm", (dialog, which) -> {
                     String name = edtName.getText().toString().trim();
                     String description = edtDescription.getText().toString().trim();
                     String priceStr = edtPrice.getText().toString().trim();
-                    String imageUrl = selectedImageUri.toString();
-
                     if (name.isEmpty() || description.isEmpty() || priceStr.isEmpty()) {
                         Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    int price = Integer.parseInt(priceStr);
-
-                    int selectedIndex = selectRestaurant.getSelectedItemPosition();
-                    if (selectedIndex < 0 || selectedIndex >= restaurantList.size()) {
-                        Toast.makeText(this, "Vui lòng chọn nhà hàng hợp lệ!", Toast.LENGTH_SHORT).show();
-                        return;
+                    if (selectedImageUri != null) {
+                        // Upload the image to Firebase
+                        StorageReference imageRef = storageRef.child("images/" + System.currentTimeMillis() + ".jpg");
+                        imageRef.putFile(selectedImageUri)
+                                .addOnSuccessListener(taskSnapshot -> {
+                                    imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                        String imageUrl = uri.toString();
+                                        int price = Integer.parseInt(priceStr);
+                                        MenuItems newItem = new MenuItems(restautantId, name, description, price, imageUrl,"available");
+                                        menuItemsViewModel.insert(newItem);
+                                        menuItemsViewModel.fetchMenuItemsByRestaurant(restautantId);
+                                        Log.d("Image URL", "Uploaded Image URL: " + imageUrl);
+                                    });
+                                })
+                                .addOnFailureListener(e -> Log.e("Error", "Image upload failed: " + e.getMessage()));
+                    } else {
+                        Log.e("Error", "No image selected");
                     }
 
-                    String restaurantId = restaurantList.get(selectedIndex).getId();
 
-                    MenuItems newItem = new MenuItems(restaurantId, name, description, price, imageUrl,"available");
-                    menuItemsViewModel.insert(newItem);
 
                     Toast.makeText(this, "Món mới đã được thêm!", Toast.LENGTH_SHORT).show();
                 })
@@ -202,44 +237,24 @@ public class MenuItemsActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
-    private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            // Get the selected image URI
             selectedImageUri = data.getData();
-            getContentResolver().takePersistableUriPermission(
-                    selectedImageUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            );
-            showAddMenuItemDialog();
-        }
 
-    }
-
-    private void checkStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  // Android 13+
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 100);
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
+            // Display the selected image in the ImageView
+            if (selectedImageUri != null) {
+                ImageView imgPhoto = findViewById(R.id.img_photo); // Reference the ImageView from the dialog
+                imgPhoto.setImageURI(selectedImageUri); // Set the selected image URI
+            } else {
+                Log.e("Error", "Không có ảnh nào được chọn");
             }
         }
     }
+
 
 }
 

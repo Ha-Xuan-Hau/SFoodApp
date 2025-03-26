@@ -6,6 +6,40 @@
     android:orientation="vertical"
     android:padding="10dp">
 
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+
+        <!-- Nút mở navbar -->
+        <ImageButton
+            android:id="@+id/btn_open_nav"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="Menu" />
+
+        <!-- Spacer để đẩy avatar về bên phải -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1" />
+
+        <!-- Ảnh đại diện -->
+        <ImageView
+            android:id="@+id/img_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar"
+            android:background="@drawable/circle_shape"
+            android:contentDescription="Avatar" />
+    </LinearLayout>
+
     <!-- Thanh tìm kiếm -->
     <SearchView
         android:id="@+id/search_view"
@@ -17,7 +51,7 @@
     <Spinner
         android:id="@+id/spinner_filter_price"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="37dp"
         android:layout_marginTop="8dp" />
 
     <!-- RecyclerView hiển thị danh sách menu -->
@@ -35,4 +69,3 @@
         android:text="Thêm món" />
 
 </LinearLayout>
-
