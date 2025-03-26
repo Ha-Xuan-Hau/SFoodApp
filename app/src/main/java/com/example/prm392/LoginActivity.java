@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.prm392.activity.MainActivity;
 import com.example.prm392.entity.CustomerUser;
 import com.example.prm392.entity.Restaurant;
 import com.example.prm392.entity.Shipper;
@@ -173,7 +174,7 @@ public class LoginActivity extends AppCompatActivity {
 
             Intent intent = null;
             if (userRole.equals("customer")) {
-                intent = new Intent(LoginActivity.this, MenuItemsActivity.class);
+                intent = new Intent(LoginActivity.this, MainActivity.class);
             } else if (userRole.equals("shipper")) {
                 intent = new Intent(LoginActivity.this, ShipperActivity.class);
                 Shipper shipperUser = (Shipper) user;
