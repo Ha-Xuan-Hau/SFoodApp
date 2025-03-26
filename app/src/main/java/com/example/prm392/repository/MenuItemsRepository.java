@@ -1,5 +1,7 @@
 package com.example.prm392.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -28,11 +30,11 @@ public class MenuItemsRepository {
         String id = databaseReference.push().getKey();
         if (id != null) {
             menuItem.setId(id);
-            databaseReference.child(id).setValue(menuItem);
+            databaseReference.child(id).setValue(menuItem).addOnSuccessListener(aVoid -> Log.d("Firebase", "Thêm món ăn thành công!"))
+                    .addOnFailureListener(e -> Log.e("Firebase", "Lỗi khi thêm món ăn!", e));;
         }
     }
 
-    // Lấy danh sách món ăn theo restaurantId
     public void getMenuByRestaurant(int restaurantId, OnMenuLoadListener listener) {
         databaseReference.orderByChild("restaurantId").equalTo(restaurantId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -132,7 +134,6 @@ public class MenuItemsRepository {
         MutableLiveData<List<MenuItemDTO>> menuItemsLiveData = new MutableLiveData<>();
         DatabaseReference restaurantRef = FirebaseDatabase.getInstance().getReference("restaurants");
 
-        // Lọc menu items theo restaurantId
         databaseReference.orderByChild("restaurantId").equalTo(restaurantId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override

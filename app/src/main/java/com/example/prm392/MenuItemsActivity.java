@@ -7,7 +7,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -42,6 +45,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,23 +58,27 @@ public class MenuItemsActivity extends AppCompatActivity {
     private MenuItemsViewModel menuItemsViewModel;
     private MenuItemsAdapter adapter;
     private List<MenuItemDTO> menuItemsList = new ArrayList<>();
-    private static final int PICK_IMAGE_REQUEST = 1;
+    private DatabaseReference databaseReference;
     private SearchView searchView;
     private Spinner spinnerFilterPrice;
     private List<MenuItemDTO> originalMenuItemsList = new ArrayList<>();
-
+    private ImageView imgPhoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_items);
+        checkStoragePermission();
         ImageButton btnOpenNav = findViewById(R.id.btn_open_nav);
         Intent intent = getIntent();
-        String restaurantId = "1";
+        String restaurantId = intent.getStringExtra("restaurantId");
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app");
+        databaseReference = database.getReference("menuItems");
+
         btnOpenNav.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(this, v);
             popupMenu.getMenu().add("Quản lý thông tin nhà hàng").setOnMenuItemClickListener(item -> {
-                Intent intent2 = new Intent(this, UpdateRestaurantActivity.class);
+                Intent intent2 = new Intent(MenuItemsActivity.this, UpdateRestaurantActivity.class);
                 intent2.putExtra("restaurantId", restaurantId);
                 startActivity(intent2);
                 return true;
@@ -97,7 +109,7 @@ public class MenuItemsActivity extends AppCompatActivity {
 
         menuItemsViewModel = new ViewModelProvider (this).get(MenuItemsViewModel.class);
 
-        menuItemsViewModel.fetchMenuItemsByRestaurant(restaurantId); // Gọi phương thức lấy dữ liệu theo restaurantId
+        menuItemsViewModel.fetchMenuItemsByRestaurant(restaurantId);
 
         menuItemsViewModel.getAllMenuItemsWithRestaurant().observe(this, menuItems -> {
             originalMenuItemsList.clear();
@@ -149,6 +161,31 @@ public class MenuItemsActivity extends AppCompatActivity {
         });
     }
 
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(intent, 100);
+    }
+
+    private void checkStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ cần quyền READ_MEDIA_IMAGES thay vì READ_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 100);
+            }
+        } else {
+            // Android 12 trở xuống
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
+            }
+        }
+    }
+
+
     private void filterData(String searchText) {
         List<MenuItemDTO> filteredList = new ArrayList<>();
         String selectedPriceFilter = spinnerFilterPrice.getSelectedItem().toString();
@@ -185,13 +222,11 @@ public class MenuItemsActivity extends AppCompatActivity {
         EditText edtPrice = dialogView.findViewById(R.id.edtPrice);
 
         Button btnSelectImage = dialogView.findViewById(R.id.btn_select_image);
-        ImageView imgPhoto = dialogView.findViewById(R.id.img_photo);
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
-        Uri selectedImageUri = null;
-
+        imgPhoto = dialogView.findViewById(R.id.img_photo);
         btnSelectImage.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
@@ -210,16 +245,23 @@ public class MenuItemsActivity extends AppCompatActivity {
                     }
 
                     if (selectedImageUri != null) {
+
+                        String imageUrl = selectedImageUri.toString();
+                        int price = Integer.parseInt(priceStr);
+                        MenuItems newItem = new MenuItems(restautantId, name, description, price, imageUrl,"available");
+                        String itemId = databaseReference.push().getKey();
+                        if (itemId != null) {
+                            databaseReference.child(itemId).setValue(newItem)
+                                    .addOnSuccessListener(aVoid -> Log.d("Firebase", "Thêm thành công!"))
+                                    .addOnFailureListener(e -> Log.e("Firebase", "Lỗi khi thêm: " + e.getMessage()));
+                            Toast.makeText(this, "Món mới đã được thêm!", Toast.LENGTH_SHORT).show();
+                        }
+
                         // Upload the image to Firebase
                         StorageReference imageRef = storageRef.child("images/" + System.currentTimeMillis() + ".jpg");
                         imageRef.putFile(selectedImageUri)
                                 .addOnSuccessListener(taskSnapshot -> {
                                     imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                                        String imageUrl = uri.toString();
-                                        int price = Integer.parseInt(priceStr);
-                                        MenuItems newItem = new MenuItems(restautantId, name, description, price, imageUrl,"available");
-                                        menuItemsViewModel.insert(newItem);
-                                        menuItemsViewModel.fetchMenuItemsByRestaurant(restautantId);
                                         Log.d("Image URL", "Uploaded Image URL: " + imageUrl);
                                     });
                                 })
@@ -228,29 +270,61 @@ public class MenuItemsActivity extends AppCompatActivity {
                         Log.e("Error", "No image selected");
                     }
 
-
-
-                    Toast.makeText(this, "Món mới đã được thêm!", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Permission", "Quyền truy cập được cấp!");
+            } else {
+                boolean showRationale = shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (!showRationale) {
+                    // Người dùng đã từ chối và chọn "Không hỏi lại"
+                    showSettingsDialog();
+                } else {
+                    // Người dùng từ chối nhưng chưa chọn "Không hỏi lại"
+                    Toast.makeText(this, "Bạn cần cấp quyền để chọn và tải ảnh!", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    private void showSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Yêu cầu quyền");
+        builder.setMessage("Ứng dụng cần quyền để chọn ảnh. Vui lòng cấp quyền trong Cài đặt.");
+        builder.setPositiveButton("Đi đến Cài đặt", (dialog, which) -> {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+        });
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
-            // Get the selected image URI
             selectedImageUri = data.getData();
 
-            // Display the selected image in the ImageView
             if (selectedImageUri != null) {
-                ImageView imgPhoto = findViewById(R.id.img_photo); // Reference the ImageView from the dialog
-                imgPhoto.setImageURI(selectedImageUri); // Set the selected image URI
-            } else {
-                Log.e("Error", "Không có ảnh nào được chọn");
+                Log.d("MenuItemsActivity", "Selected Image URI: " + selectedImageUri.toString());
+
+                if (imgPhoto != null) {
+                    imgPhoto.setImageURI(selectedImageUri);
+                } else {
+                    Log.e("MenuItemsActivity", "imgPhoto is null!");
+                }
             }
         }
     }

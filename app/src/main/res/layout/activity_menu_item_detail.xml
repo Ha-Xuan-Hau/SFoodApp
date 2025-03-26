@@ -9,7 +9,7 @@
         android:id="@+id/btn_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="← Quay lại"
+        android:text="Quay lại"
         android:textSize="16sp"
         android:backgroundTint="@android:color/darker_gray"
         android:textColor="@android:color/white"
@@ -95,6 +95,7 @@
         android:id="@+id/btn_update"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
         android:text="Cập Nhật Món Ăn" />
 </LinearLayout>
 

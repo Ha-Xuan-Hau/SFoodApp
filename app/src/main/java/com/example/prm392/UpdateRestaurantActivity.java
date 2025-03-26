@@ -3,6 +3,7 @@ package com.example.prm392;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,7 +28,10 @@ public class UpdateRestaurantActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_restaurant);
-
+        Button btnBack = findViewById(R.id.btn_back);
+        btnBack.setOnClickListener(v -> {
+            finish();
+        });
         // Ánh xạ View
         edtName = findViewById(R.id.edt_restaurant_name);
         edtEmail = findViewById(R.id.edt_restaurant_email);
@@ -36,9 +40,13 @@ public class UpdateRestaurantActivity extends AppCompatActivity {
         edtStatus = findViewById(R.id.edt_restaurant_status);
         edtRating = findViewById(R.id.edt_restaurant_rating);
         btnUpdate = findViewById(R.id.btn_update_restaurant);
+        restaurantId = getIntent().getStringExtra("restaurantId");
 
-        restaurantId = getIntent().getStringExtra("restaurant_id");
-
+        if (restaurantId == null) {
+            Log.e("UpdateRestaurant", "restaurantId is null!");
+        } else {
+            Log.d("UpdateRestaurant", "Received restaurantId: " + restaurantId);
+        }
         databaseReference = FirebaseDatabase.getInstance().getReference("Restaurants").child(restaurantId);
 
         getRestaurantData();
