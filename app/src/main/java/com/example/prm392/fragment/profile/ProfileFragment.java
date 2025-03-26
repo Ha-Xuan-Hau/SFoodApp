@@ -33,9 +33,8 @@ import java.util.Map;
 
 public class ProfileFragment extends Fragment {
     ImageView profileImg;
-    EditText name, email, number, address;
+    EditText name, email, number, address, passwordEditText; // Thêm EditText cho mật khẩu
     Button update;
-    private String password;
     FirebaseUser user;
     DatabaseReference databaseReference;
     StorageReference storageReference;
@@ -44,21 +43,30 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        // Khởi tạo các view
         profileImg = root.findViewById(R.id.profile_view);
         name = root.findViewById(R.id.profile_name);
         email = root.findViewById(R.id.profile_email);
         number = root.findViewById(R.id.profile_number);
         address = root.findViewById(R.id.profile_address);
+        passwordEditText = root.findViewById(R.id.profile_password); // Khởi tạo EditText mật khẩu
         update = root.findViewById(R.id.update);
 
-        // Get current user
+        // Lấy thông tin người dùng hiện tại
         user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getContext(), "Bạn cần đăng nhập để xem hồ sơ", Toast.LENGTH_SHORT).show();
+            return root; // Dừng lại nếu chưa đăng nhập
+        }
+
+        // Thiết lập tham chiếu database và storage
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(user.getUid());
         storageReference = FirebaseStorage.getInstance().getReference().child("ProfileImages").child(user.getUid());
 
-        // Load existing profile data
+        // Tải dữ liệu hồ sơ
         loadUserProfile();
 
+        // Sự kiện chọn ảnh hồ sơ
         profileImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,6 +77,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        // Sự kiện cập nhật hồ sơ
         update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,7 +94,6 @@ public class ProfileFragment extends Fragment {
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (task.isSuccessful() && task.getResult() != null) {
                     DataSnapshot dataSnapshot = task.getResult();
-                    password = dataSnapshot.child("password").getValue(String.class);
                     User userProfile = dataSnapshot.getValue(User.class);
                     if (userProfile != null) {
                         name.setText(userProfile.getName());
@@ -94,7 +102,7 @@ public class ProfileFragment extends Fragment {
                         address.setText(userProfile.getAddress());
                     }
                 } else {
-                    Toast.makeText(getContext(), "Failed to load profile data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Không thể tải dữ liệu hồ sơ", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -105,50 +113,61 @@ public class ProfileFragment extends Fragment {
         String emailText = email.getText().toString().trim();
         String numberText = number.getText().toString().trim();
         String addressText = address.getText().toString().trim();
+        String passwordText = passwordEditText.getText().toString().trim();
 
+        // Kiểm tra các trường có rỗng không
         if (TextUtils.isEmpty(nameText) || TextUtils.isEmpty(emailText) || TextUtils.isEmpty(numberText) || TextUtils.isEmpty(addressText)) {
-            Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(passwordText)) {
+            Toast.makeText(getContext(), "Vui lòng nhập mật khẩu để cập nhật", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Tạo map chứa thông tin mới
         Map<String, Object> userProfile = new HashMap<>();
         userProfile.put("name", nameText);
         userProfile.put("email", emailText);
         userProfile.put("phoneNumber", numberText);
         userProfile.put("address", addressText);
-        updateUserInDatabase(userProfile, emailText);
+
+        // Cập nhật thông tin trong database
+        updateUserInDatabase(userProfile, emailText, passwordText);
     }
 
-    private void updateUserInDatabase(Map<String, Object> userProfile, String newEmail) {
+    private void updateUserInDatabase(Map<String, Object> userProfile, String newEmail, String password) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
+
+        // Xác thực lại người dùng
         user.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    // Update the email address
-                    user.verifyBeforeUpdateEmail(user.getEmail()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    // Cập nhật email
+                    user.updateEmail(newEmail).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                // Proceed to update user profile in the database
+                                // Cập nhật thông tin trong database
                                 databaseReference.updateChildren(userProfile).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
-                                            Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
                                         } else {
-                                            Toast.makeText(getContext(), "Profile update failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Cập nhật thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
                             } else {
-                                Toast.makeText(getContext(), "Email update failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Cập nhật email thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
                 } else {
-                    Toast.makeText(getContext(), "Reauthentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Xác thực thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
