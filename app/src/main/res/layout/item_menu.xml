@@ -13,7 +13,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_launcher_background"
+        android:src="@mipmap/ic_launcher_product"
        />
 
     <LinearLayout
@@ -40,14 +40,6 @@
             android:text="Giá"
             android:textSize="14sp"
             android:textColor="@android:color/holo_red_dark"/>
-
-        <TextView
-            android:id="@+id/txt_restaurant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nhà Hàng"
-            android:textSize="14sp"
-            android:textColor="@android:color/background_dark"/>
     </LinearLayout>
 
     <!-- Nút xóa -->

@@ -1,5 +1,7 @@
 package com.example.prm392.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -24,12 +26,15 @@ public class MenuItemsRepository {
         databaseReference = database.getReference("menuItems");
     }
 
-    // Thêm món ăn vào Firebase
     public void insert(MenuItems menuItem) {
-        databaseReference.child(menuItem.getId()).setValue(menuItem);
+        String id = databaseReference.push().getKey();
+        if (id != null) {
+            menuItem.setId(id);
+            databaseReference.child(id).setValue(menuItem).addOnSuccessListener(aVoid -> Log.d("Firebase", "Thêm món ăn thành công!"))
+                    .addOnFailureListener(e -> Log.e("Firebase", "Lỗi khi thêm món ăn!", e));;
+        }
     }
 
-    // Lấy danh sách món ăn theo restaurantId
     public void getMenuByRestaurant(int restaurantId, OnMenuLoadListener listener) {
         databaseReference.orderByChild("restaurantId").equalTo(restaurantId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -94,54 +99,6 @@ public class MenuItemsRepository {
         return menuItemsLiveData;
     }
 
-    // **Lấy danh sách menu items kèm thông tin restaurant**
-    public LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant() {
-        MutableLiveData<List<MenuItemDTO>> menuItemsLiveData = new MutableLiveData<>();
-        DatabaseReference restaurantRef = FirebaseDatabase.getInstance()
-                .getReference("restaurants");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot menuSnapshot) {
-                List<MenuItemDTO> menuItemDTOList = new ArrayList<>();
-                for (DataSnapshot itemSnapshot : menuSnapshot.getChildren()) {
-                    MenuItems menuItem = itemSnapshot.getValue(MenuItems.class);
-
-                    if (menuItem != null) {
-                        String restaurantId = menuItem.getRestaurantId();
-                        restaurantRef.child(restaurantId)
-                                .addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot restaurantSnapshot) {
-                                        String restaurantName = restaurantSnapshot.child("email").getValue(String.class);
-                                        MenuItemDTO dto = new MenuItemDTO();
-                                        dto.id = menuItem.getId();
-                                        dto.menu_name = menuItem.getName();
-                                        dto.price = menuItem.getPrice();
-                                        dto.description = menuItem.getDescription();
-                                        dto.restaurant_name = restaurantName;
-                                        dto.uri = menuItem.getImageUrl();
-                                        dto.restaurant_id = menuItem.getRestaurantId();
-                                        menuItemDTOList.add(dto);
-                                        menuItemsLiveData.setValue(menuItemDTOList);
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {}
-                                });
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                menuItemsLiveData.setValue(null);
-            }
-        });
-
-        return menuItemsLiveData;
-    }
-
     // **Cập nhật món ăn**
     public void update(MenuItems menuItems) {
         String id = menuItems.getId();
@@ -172,33 +129,53 @@ public class MenuItemsRepository {
     }
 
 
-    public void getAllMenuItemsWithRestaurant(OnMenuItemsLoadedListener listener) {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<MenuItemDTO> menuList = new ArrayList<>();
-                for (DataSnapshot menuSnapshot : snapshot.getChildren()) {
-                    MenuItems menuItem = menuSnapshot.getValue(MenuItems.class);
-                    if (menuItem != null) {
-                        MenuItemDTO dto = new MenuItemDTO();
-                        dto.id = menuItem.getId();
-                        dto.menu_name = menuItem.getName();
-                        dto.price = menuItem.getPrice();
-                        dto.description = menuItem.getDescription();
-                        dto.uri = menuItem.getImageUrl();
-                        dto.restaurant_id = menuItem.getRestaurantId();
-                        menuList.add(dto);
-                    }
-                }
-                listener.onMenuItemsLoaded(menuList);
-            }
+    // **Lấy danh sách menu items của một restaurant cụ thể**
+    public LiveData<List<MenuItemDTO>> getMenuItemsByRestaurant(String restaurantId) {
+        MutableLiveData<List<MenuItemDTO>> menuItemsLiveData = new MutableLiveData<>();
+        DatabaseReference restaurantRef = FirebaseDatabase.getInstance().getReference("restaurants");
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                listener.onMenuItemsLoaded(new ArrayList<>());
-            }
-        });
+        databaseReference.orderByChild("restaurantId").equalTo(restaurantId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot menuSnapshot) {
+                        List<MenuItemDTO> menuItemDTOList = new ArrayList<>();
+                        for (DataSnapshot itemSnapshot : menuSnapshot.getChildren()) {
+                            MenuItems menuItem = itemSnapshot.getValue(MenuItems.class);
+                            if (menuItem != null) {
+                                // Lấy thông tin nhà hàng
+                                restaurantRef.child(restaurantId)
+                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot restaurantSnapshot) {
+                                                String restaurantName = restaurantSnapshot.child("name").getValue(String.class);
+                                                MenuItemDTO dto = new MenuItemDTO();
+                                                dto.id = menuItem.getId();
+                                                dto.menu_name = menuItem.getName();
+                                                dto.price = menuItem.getPrice();
+                                                dto.description = menuItem.getDescription();
+                                                dto.restaurant_name = restaurantName;
+                                                dto.uri = menuItem.getImageUrl();
+                                                dto.restaurant_id = menuItem.getRestaurantId();
+                                                menuItemDTOList.add(dto);
+                                                menuItemsLiveData.setValue(menuItemDTOList);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {}
+                                        });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        menuItemsLiveData.setValue(null);
+                    }
+                });
+
+        return menuItemsLiveData;
     }
+
 
     // 🔹 Interface callback cho findById
     public interface OnFindMenuItemListener {

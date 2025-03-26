@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/tv_OTPemail"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <Button
-        android:id="@+id/btnGoToShipper"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chuyển đến Shipper"
-        android:layout_gravity="center"
-        android:padding="16dp"/>
+        android:text="Thêm Món Ăn" />
+
+    <Button
+        android:id="@+id/btnGet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lấy Danh Sách Món Ăn" />
+
     <TextView
         android:id="@+id/textViewResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thông tin nhà hàng sẽ hiển thị ở đây"
-        android:textSize="18sp"
-        android:padding="16dp"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:padding="10dp"
+        android:text="Danh sách món ăn sẽ hiển thị ở đây..."
+        android:textSize="16sp" />
+</LinearLayout>

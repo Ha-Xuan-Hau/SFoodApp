@@ -2,6 +2,7 @@ package com.example.prm392.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +70,9 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
         MenuItemDTO menuItem = menuItemsList.get(position);
         holder.name.setText(menuItem.getMenu_name());
         holder.price.setText(String.format("%.2f VND", menuItem.getPrice()));
-        holder.restaurant.setText("Nhà hàng: " + menuItem.getRestaurant_name());
+
+        //holder.imageView.setImageResource(R.drawable.bg_rounded_corner);
+
        // holder.imageView.setImageURI(Uri.parse(menuItem.getUri()));
         holder.itemView.setOnClickListener(v -> {
             Context itemContext = v.getContext();
@@ -104,7 +107,6 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<MenuItemsAdapter.Menu
             super(itemView);
             name = itemView.findViewById(com.example.prm392.R.id.item_name);
             price = itemView.findViewById(R.id.item_price);
-            restaurant = itemView.findViewById(R.id.txt_restaurant);
             btnDelete = itemView.findViewById(R.id.btn_delete);
             imageView = itemView.findViewById(R.id.item_image);
         }

@@ -13,50 +13,40 @@ import com.example.prm392.repository.MenuItemsRepository;
 import com.example.prm392.repository.RestaurantRepository;
 
 import java.util.List;
-
 public class MenuItemsViewModel extends ViewModel {
-    private MenuItemsRepository repository;
-    private RestaurantRepository restaurantRepository;
-    private MutableLiveData<List<MenuItemDTO>> allMenuItemsWithRestaurant = new MutableLiveData<>();
+    private final MenuItemsRepository repository;
+    private final RestaurantRepository restaurantRepository;
+    private MutableLiveData<List<MenuItemDTO>> allMenuItemsWithRestaurant;
 
     public MenuItemsViewModel() {
         repository = new MenuItemsRepository();
         restaurantRepository = new RestaurantRepository();
-        fetchAllMenuItemsWithRestaurant();
+        allMenuItemsWithRestaurant = new MutableLiveData<>();
     }
 
-    // Thêm món ăn mới vào Firebase
     public void insert(MenuItems menuItems) {
         repository.insert(menuItems);
     }
 
-    // Lấy danh sách tất cả món ăn kèm thông tin nhà hàng
-    private void fetchAllMenuItemsWithRestaurant() {
-        repository.getAllMenuItemsWithRestaurant(new MenuItemsRepository.OnMenuItemsLoadedListener() {
-            @Override
-            public void onMenuItemsLoaded(List<MenuItemDTO> menuItems) {
-                allMenuItemsWithRestaurant.setValue(menuItems);
-            }
-        });
+    public void fetchMenuItemsByRestaurant(String restaurantId) {
+        allMenuItemsWithRestaurant = (MutableLiveData<List<MenuItemDTO>>) repository.getMenuItemsByRestaurant(restaurantId);
     }
 
     public LiveData<List<MenuItemDTO>> getAllMenuItemsWithRestaurant() {
         return allMenuItemsWithRestaurant;
     }
 
-    // Cập nhật món ăn
     public void update(MenuItems menuItems) {
         repository.update(menuItems);
     }
 
-    // Xóa món ăn
     public void deleteMenuItem(String menuItemId) {
         repository.deleteById(menuItemId);
     }
 
-    // Lấy danh sách tất cả nhà hàng
     public LiveData<List<Restaurant>> getAllRestaurants() {
         return restaurantRepository.getAllRestaurants();
     }
 }
+
 

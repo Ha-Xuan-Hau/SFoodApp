@@ -40,6 +40,7 @@ dependencies {
     implementation ("androidx.room:room-runtime:2.6.1")
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
+    implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.firebase.database)
     implementation("com.sun.mail:android-mail:1.6.2")
@@ -47,6 +48,7 @@ dependencies {
     annotationProcessor ("androidx.room:room-compiler:2.6.1")
     implementation ("androidx.recyclerview:recyclerview:1.3.2")
     implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
+    implementation ("com.google.firebase:firebase-storage:20.2.1")
     implementation("com.google.firebase:firebase-analytics")
     implementation ("com.google.firebase:firebase-database:20.2.2")
 
@@ -64,4 +66,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }

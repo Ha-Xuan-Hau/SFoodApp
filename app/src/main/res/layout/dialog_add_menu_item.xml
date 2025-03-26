@@ -6,15 +6,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tv_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Thêm Sản Phẩm"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingBottom="16dp"/>
 
     <TextView
         android:layout_width="100dp"
@@ -59,22 +50,20 @@
         android:layout_height="wrap_content"
         android:text="Ảnh (vui lòng chọn):"
         android:textSize="16sp" />
-    <EditText
-        android:id="@+id/edtImageUrl"
-        style="@style/EditTextStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="URL Hình ảnh" />
 
-    <TextView
-        android:layout_width="180dp"
+
+    <Button
+        android:id="@+id/btn_select_image"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chọn nhà hàng:"
-        android:textSize="16sp" />
-    <Spinner
-        android:id="@+id/select_restaurant"
-        style="@style/SpinnerStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:text="Chọn ảnh từ thư viện" />
+
+    <ImageView
+        android:id="@+id/img_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        />
+
 
 </LinearLayout>

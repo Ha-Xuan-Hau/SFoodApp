@@ -29,8 +29,6 @@ public class MenuItemDetailActivity extends AppCompatActivity {
     private List<Restaurant> restaurantList = new ArrayList<>();
     private List<String> restaurantNames = new ArrayList<>();
 
-    // Danh sách nhà hàng giả định
-    //private String[] restaurantList = {"Nhà hàng A", "Nhà hàng B", "Nhà hàng C"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +47,7 @@ public class MenuItemDetailActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String id = getIntent().getStringExtra("id");
         String menuName = intent.getStringExtra("menu_name");
-        float price = intent.getFloatExtra("price",0);
+        double price = intent.getDoubleExtra("price",-1);
         String description = intent.getStringExtra("description");
         String selectedRestaurant = intent.getStringExtra("restaurant_id");
 
@@ -95,7 +93,7 @@ public class MenuItemDetailActivity extends AppCompatActivity {
     private void updateMenuItem() {
         String id = etId.getText().toString().trim();
         String updatedName = etMenuName.getText().toString().trim();
-        float updatedPrice = Float.parseFloat(etPrice.getText().toString().trim());
+        double updatedPrice = Double.parseDouble(etPrice.getText().toString().trim());
         String updatedDescription = etDescription.getText().toString().trim();
         String selectedRestaurantId = restaurantList.get(spinnerRestaurant.getSelectedItemPosition()).getId();
 
