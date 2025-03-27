@@ -263,6 +263,9 @@ public class MenuItemsActivity extends AppCompatActivity {
                                     .addOnSuccessListener(aVoid -> Log.d("Firebase", "Thêm thành công!"))
                                     .addOnFailureListener(e -> Log.e("Firebase", "Lỗi khi thêm: " + e.getMessage()));
                             Toast.makeText(this, "Món mới đã được thêm!", Toast.LENGTH_SHORT).show();
+                            Intent intent2 = new Intent(this, MenuItemsActivity.class);
+                            intent2.putExtra("restaurantId", restautantId);
+                            startActivity(intent2);
                         }
 
                         // Upload the image to Firebase
