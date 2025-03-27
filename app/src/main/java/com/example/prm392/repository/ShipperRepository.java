@@ -9,6 +9,7 @@ import com.example.prm392.entity.Shipper;
 import com.example.prm392.service.PasswordUtil;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 
 public class ShipperRepository {
@@ -103,6 +104,7 @@ public class ShipperRepository {
 
     // Đăng nhập bằng email và mật khẩu
     public void login(String email, String password,OnLoginListener listener) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password);
         shipperRef.orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override

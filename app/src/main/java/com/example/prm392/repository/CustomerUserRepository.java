@@ -1,9 +1,16 @@
 package com.example.prm392.repository;
 
+import android.content.Intent;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import com.example.prm392.entity.CustomerUser;
 import com.example.prm392.service.PasswordUtil;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
@@ -15,10 +22,9 @@ import java.util.UUID;
 
 public class CustomerUserRepository {
     private DatabaseReference databaseReference;
-
     public CustomerUserRepository() {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://prm392-sfood-default-rtdb.asia-southeast1.firebasedatabase.app");
-        databaseReference = database.getReference("customerUsers");
+        databaseReference = database.getReference("Customers");
     }
 
     // Thêm khách hàng mới vào Firebase
@@ -28,6 +34,7 @@ public class CustomerUserRepository {
 
     // Đăng nhập bằng email và mật khẩu
     public void login(String email, String password, OnLoginListener listener) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password);
         databaseReference.orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
