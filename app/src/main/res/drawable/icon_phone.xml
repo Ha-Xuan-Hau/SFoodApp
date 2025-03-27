@@ -5,11 +5,11 @@
     android:height="24dp"
     android:viewportWidth="16"
     android:viewportHeight="16"
-    android:tint="#52ED55">
+    android:tint="#FF9800">
 
     <!-- Main shape of the icon -->
     <path
-        android:fillColor="#52ED55"
+        android:fillColor="#FF9800"
         android:pathData="M1,5V1H7V5L4.5,7.5L8.5,11.5L11,9H15V15H11
                           C5.477,15 1,10.523 1,5Z"/>
 </vector>
