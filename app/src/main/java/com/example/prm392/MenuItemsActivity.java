@@ -91,6 +91,14 @@ public class MenuItemsActivity extends AppCompatActivity {
                 return true;
             });
 
+            popupMenu.getMenu().add("Đăng Xuất").setOnMenuItemClickListener(item -> {
+                Intent intent3 = new Intent(MenuItemsActivity.this, LoginActivity.class);
+                intent3.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent3);
+                finish();
+                return true;
+            });
+
             popupMenu.show();
         });
 
