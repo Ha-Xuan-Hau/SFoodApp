@@ -1,5 +1,6 @@
 package com.example.prm392.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
+import com.example.prm392.LoginActivity;
 import com.example.prm392.R;
 import com.example.prm392.databinding.ActivityMainUserBinding;
 import com.google.android.material.navigation.NavigationView;
@@ -45,12 +47,28 @@ public class    MainActivity extends AppCompatActivity {
         NavigationView navigationView = binding.navView;
 
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_category, R.id.nav_profile, R.id.nav_offers, R.id.nav_new_products, R.id.nav_my_carts, R.id.nav_my_orders)
+                R.id.nav_home, R.id.nav_category, R.id.nav_profile, R.id.nav_offers, R.id.nav_new_products, R.id.nav_my_carts, R.id.nav_my_orders, R.id.nav_logout)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        //xu li logout
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_logout) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            } else {
+                NavigationUI.onNavDestinationSelected(item, navController);
+                drawer.closeDrawers();
+                return true;
+            }
+        });
 
         // Lấy header view của NavigationView
         View headerView = navigationView.getHeaderView(0);
