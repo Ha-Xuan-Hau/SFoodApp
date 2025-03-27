@@ -10,6 +10,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -55,6 +58,7 @@ public class ShipperActivity extends AppCompatActivity implements OrderShipRepos
     private OrderDetailRepository orderDetailRepository;
     private ShipperRepository shipperRepository;
     private ShipperEvaluationRepository shipperEvaluationRepository;
+    private String email;
 
 
 
@@ -128,7 +132,7 @@ public class ShipperActivity extends AppCompatActivity implements OrderShipRepos
                         View headerView = navigationView.getHeaderView(0);
                         TextView usernameTextView = headerView.findViewById(R.id.nav_header_username);
                         TextView emailTextView = headerView.findViewById(R.id.nav_header_email);
-
+                        email = shipper.getEmail();
                         usernameTextView.setText(shipper.getFullName());
                         emailTextView.setText(shipper.getEmail());
                     } else {
@@ -248,6 +252,24 @@ public class ShipperActivity extends AppCompatActivity implements OrderShipRepos
                 });
 
             }
+            if(itemId == R.id.nav_changePass){
+                // Kiểm tra shipperId trước khi truy vấn Firebase
+                if (shipperId == null) {
+                    Toast.makeText(ShipperActivity.this, "Không tìm thấy shipperId!", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                Intent intent1 = new Intent(ShipperActivity.this, NewPasswordActivity.class);
+                intent1.putExtra("email", email);
+                changePass.launch(intent1);
+            }
+            if (itemId == R.id.nav_logout) {
+                Intent intent1 = new Intent(ShipperActivity.this, LoginActivity.class);
+                intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent1);
+                finish();
+            }
+
 
             drawerLayout.closeDrawer(GravityCompat.END);
             return true;
@@ -306,4 +328,11 @@ public class ShipperActivity extends AppCompatActivity implements OrderShipRepos
     public void onFailure(String message) {
 
     }
+    private final ActivityResultLauncher<Intent> changePass = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                }
+            }
+    );
 }
